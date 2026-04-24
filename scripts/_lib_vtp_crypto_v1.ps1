@@ -52,7 +52,10 @@ function Protect-BytesAesGcm([byte[]]$Plain,[byte[]]$Key,[byte[]]$Nonce,[byte[]]
   $aes.Padding = [System.Security.Cryptography.PaddingMode]::PKCS7
   $aes.KeySize = 256
   $aes.Key = $encKey
-  $aes.IV = $Nonce
+  $ivMaterial = [System.Security.Cryptography.SHA256]::Create().ComputeHash($Nonce)
+$cbcIv = New-Object byte[] 16
+[Array]::Copy($ivMaterial,0,$cbcIv,0,16)
+$aes.IV = $cbcIv
 
   try {
     $encryptor = $aes.CreateEncryptor()
@@ -100,7 +103,10 @@ function Unprotect-BytesAesGcm([byte[]]$Cipher,[byte[]]$Key,[byte[]]$Nonce,[byte
   $aes.Padding = [System.Security.Cryptography.PaddingMode]::PKCS7
   $aes.KeySize = 256
   $aes.Key = $encKey
-  $aes.IV = $Nonce
+  $ivMaterial = [System.Security.Cryptography.SHA256]::Create().ComputeHash($Nonce)
+$cbcIv = New-Object byte[] 16
+[Array]::Copy($ivMaterial,0,$cbcIv,0,16)
+$aes.IV = $cbcIv
 
   try {
     $decryptor = $aes.CreateDecryptor()
