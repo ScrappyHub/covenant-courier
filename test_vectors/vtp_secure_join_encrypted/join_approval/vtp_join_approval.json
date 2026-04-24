@@ -1,0 +1,1 @@
+{"schema":"vtp.join_approval.v1","created_utc":"2026-04-24T01:45:27.0209184Z","from_node_id":"node-alpha","to_node_id":"node-beta","challenge_sha256":"584e89c5bd5c0a5fd103c00a11b8f7f82c8babfede16f886cec25fce73bef2a0","approval_status":"approved"}
