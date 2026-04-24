@@ -17,18 +17,36 @@ if(Test-Path -LiteralPath $keyRoot){ Remove-Item -LiteralPath $keyRoot -Recurse 
 $keyPath = Join-Path $keyRoot "selftest_ed25519"
 $pubPath = $keyPath + ".pub"
 $ssh = Join-Path $env:WINDIR "System32\OpenSSH\ssh-keygen.exe"
-& $ssh -t ed25519 -N "" -f $keyPath -C "vtp-selftest@local" | Out-Null
-if($LASTEXITCODE -ne 0){ throw "VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:KEYGEN" }
+$p = Start-Process -FilePath $ssh `
+  -ArgumentList ('-t ed25519 -N "" -f "{0}" -C "vtp-selftest@local"' -f $keyPath) `
+  -NoNewWindow `
+  -Wait `
+  -PassThru
+
+if($p.ExitCode -ne 0){ throw "VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:KEYGEN" }
 
 $inviteRoot = Join-Path $RepoRoot "test_vectors\vtp_trust_bootstrap\invite"
-& $Export -RepoRoot $RepoRoot -NodeId "node-selftest" -Principal "vtp-selftest@local" -PublicKeyPath $pubPath -OutRoot $inviteRoot
-if($LASTEXITCODE -ne 0){ throw "VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:EXPORT" }
+try {
+  & $Export -RepoRoot $RepoRoot -NodeId "node-selftest" -Principal "vtp-selftest@local" -PublicKeyPath $pubPath -OutRoot $inviteRoot
+}
+catch {
+  throw ("VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:EXPORT:" + $_.ToString())
+}
 
-& $Import -RepoRoot $RepoRoot -InviteRoot $inviteRoot
-if($LASTEXITCODE -ne 0){ throw "VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:IMPORT" }
+try {
+  & $Import -RepoRoot $RepoRoot -InviteRoot $inviteRoot
+}
+catch {
+  throw ("VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:IMPORT:" + $_.ToString())
+}
 
 $invite = Get-Content -LiteralPath (Join-Path $inviteRoot "vtp_identity_invite.json") -Raw | ConvertFrom-Json
-& $Pin -RepoRoot $RepoRoot -InviteRoot $inviteRoot -ExpectedFingerprintSha256 ([string]$invite.public_key_sha256)
-if($LASTEXITCODE -ne 0){ throw "VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:PIN" }
+
+try {
+  & $Pin -RepoRoot $RepoRoot -InviteRoot $inviteRoot -ExpectedFingerprintSha256 ([string]$invite.public_key_sha256)
+}
+catch {
+  throw ("VTP_TRUST_BOOTSTRAP_SELFTEST_FAIL:PIN:" + $_.ToString())
+}
 
 Write-Host "VTP_TRUST_BOOTSTRAP_SELFTEST_OK"
