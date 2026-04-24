@@ -1,0 +1,19 @@
+# Runtime / proofs (DO NOT VERSION)
+proofs/
+_runtime/
+runs/
+logs/
+
+# Local trust material
+proofs/trust/
+*.key
+*.pem
+
+# Node modules / builds
+node_modules/
+dist/
+build/
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -1,0 +1,7 @@
+VERIFY_FAIL:LEXICAL_TRANSFORM_HASH_MISMATCH
+At C:\dev\covenant-courier\scripts\courier_verify_message_v1.ps1:12 char:3
++   throw $Code
++   ~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (VERIFY_FAIL:LEX...M_HASH_MISMATCH:String) [], RuntimeException
+    + FullyQualifiedErrorId : VERIFY_FAIL:LEXICAL_TRANSFORM_HASH_MISMATCH
+ 

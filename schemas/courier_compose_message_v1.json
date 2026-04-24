@@ -1,0 +1,13 @@
+{
+  "schema": "courier.compose_message.v1",
+  "description": "Standalone compose request for Covenant Courier.",
+  "required_top_level_fields": [
+    "schema",
+    "message_id",
+    "created_utc",
+    "sender",
+    "recipients",
+    "plaintext",
+    "dictionary_ref"
+  ]
+}

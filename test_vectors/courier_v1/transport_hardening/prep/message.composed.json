@@ -1,0 +1,1 @@
+{"schema":"courier.lexical_message.v1","message_id":"compose-msg-001","created_utc":"2026-01-01T00:00:00Z","sender":{"principal":"courier-local@covenant"},"recipients":[{"principal":"recipient-a","type":"user"}],"plaintext":"wolf near oak tree and a rose marker","dictionary_ref":"courier-default-dictionary","tokenized_text":"","token_events":[]}

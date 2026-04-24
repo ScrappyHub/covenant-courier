@@ -1,0 +1,21 @@
+{
+  "schema": "courier.lexical_message.v1",
+  "description": "Standalone tokenized message object for Covenant Courier lexical lane.",
+  "required_top_level_fields": [
+    "schema",
+    "message_id",
+    "created_utc",
+    "sender",
+    "recipients",
+    "plaintext",
+    "tokenized_text",
+    "dictionary_ref",
+    "token_events"
+  ],
+  "token_event_fields": [
+    "surface_form",
+    "token",
+    "category",
+    "position"
+  ]
+}

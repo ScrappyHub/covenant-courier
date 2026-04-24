@@ -1,0 +1,16 @@
+{
+  "schema": "courier.network_registry.v1",
+  "type": "object",
+  "required": ["network_id","network_name","transport_kind","listener_port","binding_mode","visibility","status","allowed_nodes","created_utc"],
+  "properties": {
+    "network_id": { "type": "string" },
+    "network_name": { "type": "string" },
+    "transport_kind": { "type": "string" },
+    "listener_port": { "type": "integer" },
+    "binding_mode": { "type": "string" },
+    "visibility": { "type": "string" },
+    "status": { "type": "string" },
+    "allowed_nodes": { "type": "array" },
+    "created_utc": { "type": "string" }
+  }
+}

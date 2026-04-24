@@ -1,0 +1,13 @@
+{
+  "schema": "courier.transport_frame.v1",
+  "required_top_level_fields": [
+    "schema",
+    "frame_id",
+    "created_utc",
+    "sender_identity",
+    "recipient_identity",
+    "message_rel",
+    "signature_rel",
+    "payload_sha256"
+  ]
+}

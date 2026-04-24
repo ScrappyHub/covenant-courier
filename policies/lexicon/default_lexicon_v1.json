@@ -1,0 +1,23 @@
+{
+  "schema": "courier.lexicon.v1",
+  "categories": [
+    {
+      "category_id": "trees",
+      "terms": ["oak", "pine", "maple"],
+      "mode": "token",
+      "reversible": true
+    },
+    {
+      "category_id": "north_american_predators",
+      "terms": ["wolf", "bear", "cougar"],
+      "mode": "sealed",
+      "reversible": true
+    },
+    {
+      "category_id": "flowers",
+      "terms": ["rose", "lily", "tulip"],
+      "mode": "token",
+      "reversible": true
+    }
+  ]
+}

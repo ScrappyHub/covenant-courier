@@ -1,0 +1,18 @@
+{
+  "schema": "courier.lexical_dictionary.v1",
+  "description": "Deterministic local lexical dictionary for Covenant Courier standalone mode.",
+  "required_top_level_fields": [
+    "schema",
+    "dictionary_id",
+    "version",
+    "entries"
+  ],
+  "entry_fields": [
+    "token",
+    "category",
+    "surface_forms",
+    "meaning",
+    "sensitivity",
+    "allowed_contexts"
+  ]
+}

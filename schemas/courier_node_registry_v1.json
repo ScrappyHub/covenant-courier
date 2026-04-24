@@ -1,0 +1,16 @@
+{
+  "schema": "courier.node_registry.v1",
+  "type": "object",
+  "required": ["node_id","node_name","node_role","principal","status","created_utc","allowed_namespaces"],
+  "properties": {
+    "node_id": { "type": "string" },
+    "node_name": { "type": "string" },
+    "node_role": { "type": "string" },
+    "principal": { "type": "string" },
+    "status": { "type": "string" },
+    "created_utc": { "type": "string" },
+    "last_seen_utc": { "type": ["string","null"] },
+    "allowed_namespaces": { "type": "array" },
+    "tags": { "type": "array" }
+  }
+}

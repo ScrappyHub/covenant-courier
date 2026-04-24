@@ -1,0 +1,31 @@
+{
+  "schema": "courier.lexical_dictionary.v1",
+  "dictionary_id": "courier-default-dictionary",
+  "version": "v1",
+  "entries": [
+    {
+      "token": "trees_oak_alpha",
+      "category": "trees",
+      "surface_forms": ["oak","oak tree"],
+      "meaning": "oak",
+      "sensitivity": "controlled",
+      "allowed_contexts": ["internal","restricted"]
+    },
+    {
+      "token": "predators_wolf_alpha",
+      "category": "north_american_predators",
+      "surface_forms": ["wolf","wolves"],
+      "meaning": "wolf",
+      "sensitivity": "controlled",
+      "allowed_contexts": ["internal","restricted"]
+    },
+    {
+      "token": "flowers_rose_alpha",
+      "category": "flowers",
+      "surface_forms": ["rose","roses"],
+      "meaning": "rose",
+      "sensitivity": "controlled",
+      "allowed_contexts": ["internal"]
+    }
+  ]
+}

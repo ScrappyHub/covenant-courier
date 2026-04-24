@@ -1,0 +1,1 @@
+{"schema":"courier.node_registry.v1","node_id":"node-beta","node_name":"Node Beta","node_role":"receiver","principal":"courier-local@covenant","status":"active","created_utc":"2026-04-23T21:28:09.1651363Z","last_seen_utc":null,"allowed_namespaces":["courier/message"],"tags":[]}

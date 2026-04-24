@@ -1,0 +1,7 @@
+{
+  "schema": "courier.transport_listener_config.v1",
+  "listener_id": "courier-local-listener",
+  "drop_root": "test_vectors/courier_v1/transport/drop",
+  "accepted_root": "test_vectors/courier_v1/transport/accepted",
+  "rejected_root": "test_vectors/courier_v1/transport/rejected"
+}

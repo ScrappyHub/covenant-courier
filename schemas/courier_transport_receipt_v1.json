@@ -1,0 +1,11 @@
+{
+  "schema": "courier.transport.receipt.v1",
+  "type": "object",
+  "required": ["schema","event_type","timestamp_utc","details"],
+  "properties": {
+    "schema": { "type": "string" },
+    "event_type": { "type": "string" },
+    "timestamp_utc": { "type": "string" },
+    "details": { "type": "object" }
+  }
+}

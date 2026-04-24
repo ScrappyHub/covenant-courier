@@ -1,0 +1,17 @@
+{
+  "schema": "courier.session_registry.v1",
+  "type": "object",
+  "required": ["session_id","sender_node_id","recipient_node_id","network_id","session_role","transport_namespace","opened_utc","status"],
+  "properties": {
+    "session_id": { "type": "string" },
+    "sender_node_id": { "type": "string" },
+    "recipient_node_id": { "type": "string" },
+    "network_id": { "type": "string" },
+    "session_role": { "type": "string" },
+    "session_policy_ref": { "type": ["string","null"] },
+    "transport_namespace": { "type": "string" },
+    "opened_utc": { "type": "string" },
+    "closed_utc": { "type": ["string","null"] },
+    "status": { "type": "string" }
+  }
+}

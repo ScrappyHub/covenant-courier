@@ -1,0 +1,22 @@
+{
+  "schema": "courier.message.v1",
+  "message_id": "msg-001",
+  "sender": {
+    "principal": "orgA_admin",
+    "org": "orgA"
+  },
+  "recipients": [
+    {
+      "principal": "userB",
+      "type": "user"
+    }
+  ],
+  "created_utc": "2026-01-01T00:00:00Z",
+  "expires_utc": "2026-01-02T00:00:00Z",
+  "sensitivity": "restricted",
+  "lexical_transforms": [],
+  "payload": {
+    "type": "text",
+    "content": "we saw a wolf near the oak tree"
+  }
+}

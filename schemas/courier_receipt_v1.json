@@ -1,0 +1,7 @@
+{
+  "schema": "courier.receipt.v1",
+  "event_type": "string",
+  "message_id": "string",
+  "timestamp_utc": "string",
+  "details": {}
+}

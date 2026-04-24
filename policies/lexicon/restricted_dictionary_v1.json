@@ -1,0 +1,15 @@
+{
+  "schema": "courier.lexical_dictionary.v1",
+  "dictionary_id": "courier-restricted-dictionary",
+  "version": "v1",
+  "entries": [
+    {
+      "token": "flowers_rose_alpha",
+      "category": "flowers",
+      "surface_forms": ["rose","roses"],
+      "meaning": "rose",
+      "sensitivity": "controlled",
+      "allowed_contexts": ["restricted"]
+    }
+  ]
+}

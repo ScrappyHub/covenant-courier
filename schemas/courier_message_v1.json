@@ -1,0 +1,22 @@
+{
+  "schema": "courier.message.v1",
+  "message_id": "string",
+  "sender": {
+    "principal": "string",
+    "org": "string"
+  },
+  "recipients": [
+    {
+      "principal": "string",
+      "type": "user|node|service"
+    }
+  ],
+  "created_utc": "string",
+  "expires_utc": "string",
+  "sensitivity": "normal|restricted|sealed",
+  "lexical_transforms": [],
+  "payload": {
+    "type": "text",
+    "content": "string"
+  }
+}
