@@ -1,0 +1,24 @@
+{
+  "schema": "vtp.tray_contract.v1",
+  "protocol": "VTP",
+  "reference_implementation": "Courier",
+  "controls": [
+    "start_node_loop",
+    "stop_node_loop",
+    "run_once",
+    "show_status",
+    "show_receipts",
+    "approve_join",
+    "reject_join",
+    "export_invite",
+    "import_invite",
+    "pin_trust"
+  ],
+  "status_files": {
+    "node_loop_receipts": "proofs/receipts/vtp_node_loop.ndjson",
+    "transport_receipts": "proofs/receipts/courier_transport.ndjson",
+    "trust_receipts": "proofs/receipts/vtp_trust.ndjson",
+    "store_forward_receipts": "proofs/receipts/vtp_store_forward.ndjson"
+  },
+  "rule": "Tray app is UI only. It must not redefine VTP transport law."
+}
