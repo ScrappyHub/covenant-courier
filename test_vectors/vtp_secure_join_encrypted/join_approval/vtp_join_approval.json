@@ -1,1 +1,1 @@
-{"schema":"vtp.join_approval.v1","created_utc":"2026-04-24T02:15:30.1217697Z","from_node_id":"node-alpha","to_node_id":"node-beta","challenge_sha256":"899711dfaef2acd8294db569848a0900183ee6c15da97d2e9b3b8f99760ccde8","approval_status":"approved"}
+{"schema":"vtp.join_approval.v1","created_utc":"2026-04-25T17:12:36.6951704Z","from_node_id":"node-alpha","to_node_id":"node-beta","challenge_sha256":"dde993e877207d442cd974751f74bfee1f2d317ae46ffd9fd36a2bda20a0cac9","approval_status":"approved"}

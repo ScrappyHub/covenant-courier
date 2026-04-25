@@ -11,6 +11,10 @@ $Tier0      = Join-Path $PSScriptRoot "_RUN_vtp_tier0_full_green_v1.ps1"
 $Trust      = Join-Path $PSScriptRoot "_selftest_vtp_trust_bootstrap_v1.ps1"
 $Secure     = Join-Path $PSScriptRoot "_selftest_vtp_secure_join_encrypted_v1.ps1"
 $CryptoNeg  = Join-Path $PSScriptRoot "_selftest_vtp_secure_crypto_negative_v1.ps1"
+$Replay     = Join-Path $PSScriptRoot "_selftest_vtp_replay_guard_v1.ps1"
+$SessionKey = Join-Path $PSScriptRoot "_selftest_vtp_session_key_upgrade_v1.ps1"
+$Outbox     = Join-Path $PSScriptRoot "_selftest_vtp_outbox_persistence_v1.ps1"
+$NodeLoop   = Join-Path $PSScriptRoot "_selftest_vtp_node_loop_v1.ps1"
 
 $RunId = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
 $RunRoot = Join-Path $RepoRoot ("proofs\secure_full_green\vtp_secure_full_green_" + $RunId)
@@ -65,6 +69,10 @@ Run-Step "tier0" $Tier0
 Run-Step "trust_bootstrap" $Trust
 Run-Step "secure_join_encrypted" $Secure
 Run-Step "crypto_negatives" $CryptoNeg
+Run-Step "replay_guard" $Replay
+Run-Step "session_key_upgrade" $SessionKey
+Run-Step "outbox_persistence" $Outbox
+Run-Step "node_loop" $NodeLoop
 
 $meta = [ordered]@{
   schema = "vtp.secure_full_green.run.v1"
@@ -77,7 +85,11 @@ $meta = [ordered]@{
     "VTP_TIER0_FULL_GREEN",
     "VTP_TRUST_BOOTSTRAP_SELFTEST_OK",
     "VTP_SECURE_JOIN_ENCRYPTED_SELFTEST_OK",
-    "VTP_SECURE_CRYPTO_NEGATIVE_SELFTEST_OK"
+    "VTP_SECURE_CRYPTO_NEGATIVE_SELFTEST_OK",
+    "VTP_REPLAY_GUARD_SELFTEST_OK",
+    "VTP_SESSION_KEY_UPGRADE_SELFTEST_OK",
+    "VTP_OUTBOX_PERSISTENCE_SELFTEST_OK",
+    "VTP_NODE_LOOP_SELFTEST_OK"
   )
   final_token = "VTP_SECURE_FULL_GREEN"
 }

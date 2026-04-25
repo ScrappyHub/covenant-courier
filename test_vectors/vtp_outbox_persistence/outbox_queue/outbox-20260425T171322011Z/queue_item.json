@@ -1,0 +1,1 @@
+{"schema":"vtp.outbox.item.v1","queue_id":"outbox-20260425T171322011Z","created_utc":"2026-04-25T17:13:22.0162943Z","status":"delivered","attempts":1,"next_attempt_utc":"2026-04-25T17:13:22.0162943Z","last_attempt_utc":"2026-04-25T17:13:22.1127192Z","last_error":null,"frame_root":"frame"}
