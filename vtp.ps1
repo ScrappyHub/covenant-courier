@@ -1,8 +1,6 @@
 param(
   [Parameter(Position=0)][string]$Command = "help",
   [string]$RepoRoot = ".",
-  [string]$To = "node-beta",
-  [string]$Message = "",
   [string]$NodeId = "node-beta"
 )
 
@@ -16,52 +14,37 @@ if($Command -eq "help"){
   Write-Host "VTP commands:"
   Write-Host "  .\vtp.ps1 dev-fast"
   Write-Host "  .\vtp.ps1 status"
+  Write-Host "  .\vtp.ps1 install-node -NodeId node-beta"
   Write-Host "  .\vtp.ps1 node-loop -NodeId node-beta"
   Write-Host "  .\vtp.ps1 conformance"
   exit 0
 }
 
+if($Command -eq "install-node"){
+  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $Scripts "vtp_install_node_task_v1.ps1") -RepoRoot $RepoRoot -NodeId $NodeId
+  exit $LASTEXITCODE
+}
+
 if($Command -eq "dev-fast"){
-  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
-    -File (Join-Path $Scripts "_RUN_vtp_dev_fast_v1.ps1") `
-    -RepoRoot $RepoRoot
-  exit $LASTEXITCODE
-}
-
-if($Command -eq "conformance"){
-  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
-    -File (Join-Path $Scripts "_RUN_vtp_conformance_v1.ps1") `
-    -RepoRoot $RepoRoot
-  exit $LASTEXITCODE
-}
-
-if($Command -eq "node-loop"){
-  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
-    -File (Join-Path $Scripts "vtp_node_loop_v1.ps1") `
-    -RepoRoot $RepoRoot `
-    -NodeId $NodeId `
-    -Once
+  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $Scripts "_RUN_vtp_dev_fast_v1.ps1") -RepoRoot $RepoRoot
   exit $LASTEXITCODE
 }
 
 if($Command -eq "status"){
-  $outbox = @(Get-ChildItem -LiteralPath (Join-Path $RepoRoot "test_vectors") -Recurse -Filter "queue_item.json" -ErrorAction SilentlyContinue)
-  $receipts = Join-Path $RepoRoot "proofs\receipts"
-
   Write-Host "VTP STATUS"
   Write-Host ("Repo: " + $RepoRoot)
-  Write-Host ("Outbox items: " + $outbox.Count)
-
-  if(Test-Path $receipts){
-    Write-Host ("Receipts: " + $receipts)
-    Get-ChildItem $receipts -Filter "*.ndjson" | ForEach-Object {
-      Write-Host (" - " + $_.Name)
-    }
-  } else {
-    Write-Host "Receipts: none"
-  }
-
+  Write-Host ("Receipts: " + (Join-Path $RepoRoot "proofs\receipts"))
   exit 0
+}
+
+if($Command -eq "node-loop"){
+  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $Scripts "vtp_node_loop_v1.ps1") -RepoRoot $RepoRoot -NodeId $NodeId -Once
+  exit $LASTEXITCODE
+}
+
+if($Command -eq "conformance"){
+  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $Scripts "_RUN_vtp_conformance_v1.ps1") -RepoRoot $RepoRoot
+  exit $LASTEXITCODE
 }
 
 throw "UNKNOWN_VTP_COMMAND:$Command"
