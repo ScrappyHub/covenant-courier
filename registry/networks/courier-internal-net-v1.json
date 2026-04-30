@@ -1,1 +1,0 @@
-{"schema":"courier.network_registry.v1","network_id":"courier-internal-net-v1","network_name":"Courier Internal Net","transport_kind":"filesystem-drop","listener_port":47151,"binding_mode":"dedicated","visibility":"private","status":"active","allowed_nodes":["node-alpha","node-beta"],"created_utc":"2026-04-23T21:28:10.1899718Z"}
