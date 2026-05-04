@@ -1,0 +1,8 @@
+{
+  "schema": "vtp.dlp_policy.v1",
+  "mode": "enforce",
+  "allowed_networks": ["courier-internal-net-v1"],
+  "allowed_recipient_nodes": ["node-beta"],
+  "denied_sender_roles": ["blocked", "exfiltration", "unknown"],
+  "require_payload_sha256": true
+}

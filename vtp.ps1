@@ -71,7 +71,7 @@ if($Command -eq "install-node"){
 }
 
 if($Command -eq "node-loop"){
-  Run-PS (Join-Path $Scripts "vtp_node_loop_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-Once")
+  Run-PS (Join-Path $Scripts "vtp_node_loop_policy_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-Once")
   exit 0
 }
 
