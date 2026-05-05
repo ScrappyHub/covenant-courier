@@ -13,13 +13,16 @@ $Scripts = Join-Path $RepoRoot "scripts"
 
 function Run-PS([string]$Script,[string[]]$ArgsList){
   & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Script @ArgsList
-  if($LASTEXITCODE -ne 0){ throw ("VTP_CHILD_FAIL:" + $Script) }
+  if($LASTEXITCODE -ne 0){
+    throw ("VTP_CHILD_FAIL:" + $Script)
+  }
 }
 
 if($Command -eq "help"){
   Write-Host "VTP commands:"
   Write-Host "  .\vtp.ps1 smoke"
   Write-Host "  .\vtp.ps1 status"
+  Write-Host "  .\vtp.ps1 run-node -NodeId node-beta"
   Write-Host "  .\vtp.ps1 install-node -NodeId node-beta"
   Write-Host "  .\vtp.ps1 send -To node-beta"
   Write-Host "  .\vtp.ps1 node-loop -NodeId node-beta"
@@ -29,11 +32,27 @@ if($Command -eq "help"){
 }
 
 if($Command -eq "smoke"){
-  foreach($rel in @("scripts\vtp_node_loop_v1.ps1","scripts\vtp_install_node_task_v1.ps1","scripts\_RUN_vtp_dev_fast_v1.ps1","scripts\_RUN_vtp_conformance_v1.ps1")){
-    if(-not (Test-Path -LiteralPath (Join-Path $RepoRoot $rel) -PathType Leaf)){ throw "VTP_SMOKE_FAIL:MISSING:$rel" }
+  foreach($rel in @(
+    "scripts\vtp_node_loop_v1.ps1",
+    "scripts\vtp_node_loop_policy_v1.ps1",
+    "scripts\vtp_node_loop_forever_v1.ps1",
+    "scripts\vtp_policy_gate_v1.ps1",
+    "scripts\vtp_install_node_task_v1.ps1",
+    "scripts\_RUN_vtp_dev_fast_v1.ps1",
+    "scripts\_RUN_vtp_conformance_v1.ps1"
+  )){
+    if(-not (Test-Path -LiteralPath (Join-Path $RepoRoot $rel) -PathType Leaf)){
+      throw "VTP_SMOKE_FAIL:MISSING:$rel"
+    }
   }
+
   $task = Get-ScheduledTask -TaskName "VTP Node Loop" -ErrorAction SilentlyContinue
-  if($null -eq $task){ Write-Host "VTP_SMOKE_WARN:NO_SCHEDULED_TASK" } else { Write-Host ("VTP_TASK_STATE: " + $task.State) }
+  if($null -eq $task){
+    Write-Host "VTP_SMOKE_WARN:NO_SCHEDULED_TASK"
+  } else {
+    Write-Host ("VTP_TASK_STATE: " + $task.State)
+  }
+
   Write-Host "VTP_SMOKE_PASS"
   exit 0
 }
@@ -62,11 +81,29 @@ if($Command -eq "status"){
     Write-Host ("Next run: " + $info.NextRunTime)
     Write-Host ("Last result: " + $info.LastTaskResult)
   }
+
   exit 0
 }
 
 if($Command -eq "install-node"){
   Run-PS (Join-Path $Scripts "vtp_install_node_task_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
+  exit 0
+}
+
+if($Command -eq "run-node"){
+  Write-Host ("VTP_RUN_NODE_START: " + $NodeId)
+  Write-Host "VTP_RUN_NODE_MODE: foreground-silent"
+  Write-Host "VTP_RUN_NODE_STOP: Ctrl+C"
+
+  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+    -File (Join-Path $Scripts "vtp_node_loop_forever_v1.ps1") `
+    -RepoRoot $RepoRoot `
+    -NodeId $NodeId
+
+  if($LASTEXITCODE -ne 0){
+    throw "VTP_RUN_NODE_FAIL"
+  }
+
   exit 0
 }
 
@@ -77,9 +114,13 @@ if($Command -eq "node-loop"){
 
 if($Command -eq "send"){
   $messagePath = Join-Path $RepoRoot "test_vectors\courier_v1\transport_hardening\prep\message.tokenized.json"
-  if(-not (Test-Path -LiteralPath $messagePath -PathType Leaf)){ throw "VTP_SEND_FAIL:MISSING_PREPARED_MESSAGE" }
+
+  if(-not (Test-Path -LiteralPath $messagePath -PathType Leaf)){
+    throw "VTP_SEND_FAIL:MISSING_PREPARED_MESSAGE"
+  }
 
   Run-PS (Join-Path $Scripts "courier_open_session_v1.ps1") @("-RepoRoot",$RepoRoot,"-SessionId","session-alpha-beta-001","-SenderNodeId","node-alpha","-RecipientNodeId",$To,"-NetworkId","courier-internal-net-v1","-SessionRole","message-delivery")
+
   Run-PS (Join-Path $Scripts "courier_transport_send_v1.ps1") @("-RepoRoot",$RepoRoot,"-MessagePath",$messagePath,"-SenderIdentity","courier-local@covenant","-RecipientIdentity","courier-local@covenant","-SenderNodeId","node-alpha","-RecipientNodeId",$To,"-NetworkId","courier-internal-net-v1","-SessionId","session-alpha-beta-001","-SenderRole","message-delivery","-DropRoot","runtime\nodes\node-beta\inbox\drop")
 
   Write-Host "VTP_SEND_OK"
