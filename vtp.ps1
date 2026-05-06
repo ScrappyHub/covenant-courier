@@ -22,12 +22,13 @@ if($Command -eq "help"){
   Write-Host "VTP commands:"
   Write-Host "  .\vtp.ps1 smoke"
   Write-Host "  .\vtp.ps1 status"
-  Write-Host "  .\vtp.ps1 run-node -NodeId node-beta"
-  Write-Host "  .\vtp.ps1 install-node -NodeId node-beta"
+  Write-Host "  .\vtp.ps1 transmit -To node-beta"
   Write-Host "  .\vtp.ps1 send -To node-beta"
   Write-Host "  .\vtp.ps1 node-loop -NodeId node-beta"
   Write-Host "  .\vtp.ps1 dlp-test"
   Write-Host "  .\vtp.ps1 full-green"
+  Write-Host "  .\vtp.ps1 run-node -NodeId node-beta"
+  Write-Host "  .\vtp.ps1 install-node -NodeId node-beta"
   Write-Host "  .\vtp.ps1 dev-fast"
   Write-Host "  .\vtp.ps1 conformance"
   exit 0
@@ -138,11 +139,53 @@ if($Command -eq "send"){
     throw "VTP_SEND_FAIL:MISSING_PREPARED_MESSAGE"
   }
 
-  Run-PS (Join-Path $Scripts "courier_open_session_v1.ps1") @("-RepoRoot",$RepoRoot,"-SessionId","session-alpha-beta-001","-SenderNodeId","node-alpha","-RecipientNodeId",$To,"-NetworkId","courier-internal-net-v1","-SessionRole","message-delivery")
+  Run-PS (Join-Path $Scripts "courier_open_session_v1.ps1") @(
+    "-RepoRoot",$RepoRoot,
+    "-SessionId","session-alpha-beta-001",
+    "-SenderNodeId","node-alpha",
+    "-RecipientNodeId",$To,
+    "-NetworkId","courier-internal-net-v1",
+    "-SessionRole","message-delivery"
+  )
 
-  Run-PS (Join-Path $Scripts "courier_transport_send_v1.ps1") @("-RepoRoot",$RepoRoot,"-MessagePath",$messagePath,"-SenderIdentity","courier-local@covenant","-RecipientIdentity","courier-local@covenant","-SenderNodeId","node-alpha","-RecipientNodeId",$To,"-NetworkId","courier-internal-net-v1","-SessionId","session-alpha-beta-001","-SenderRole","message-delivery","-DropRoot",("runtime\nodes\" + $To + "\inbox\drop"))
+  Run-PS (Join-Path $Scripts "courier_transport_send_v1.ps1") @(
+    "-RepoRoot",$RepoRoot,
+    "-MessagePath",$messagePath,
+    "-SenderIdentity","courier-local@covenant",
+    "-RecipientIdentity","courier-local@covenant",
+    "-SenderNodeId","node-alpha",
+    "-RecipientNodeId",$To,
+    "-NetworkId","courier-internal-net-v1",
+    "-SessionId","session-alpha-beta-001",
+    "-SenderRole","message-delivery",
+    "-DropRoot",("runtime\nodes\" + $To + "\inbox\drop")
+  )
 
   Write-Host "VTP_SEND_OK"
+  exit 0
+}
+
+if($Command -eq "transmit"){
+  $accepted = Join-Path $RepoRoot ("runtime\nodes\" + $To + "\accepted")
+  $drop = Join-Path $RepoRoot ("runtime\nodes\" + $To + "\inbox\drop")
+  $beforeAccepted = @(Get-ChildItem -LiteralPath $accepted -Directory -ErrorAction SilentlyContinue).Count
+
+  Run-PS $PSCommandPath @("send","-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
+  Run-PS $PSCommandPath @("node-loop","-RepoRoot",$RepoRoot,"-NodeId",$To)
+  Run-PS $PSCommandPath @("status","-RepoRoot",$RepoRoot,"-NodeId",$To)
+
+  $afterAccepted = @(Get-ChildItem -LiteralPath $accepted -Directory -ErrorAction SilentlyContinue).Count
+  $dropCount = @(Get-ChildItem -LiteralPath $drop -Directory -ErrorAction SilentlyContinue).Count
+
+  if($afterAccepted -le $beforeAccepted){
+    throw ("VTP_TRANSMIT_FAIL:ACCEPT_NOT_INCREMENTED:BEFORE_" + $beforeAccepted + ":AFTER_" + $afterAccepted)
+  }
+
+  if($dropCount -ne 0){
+    throw ("VTP_TRANSMIT_FAIL:DROP_NOT_EMPTY:" + $dropCount)
+  }
+
+  Write-Host "VTP_TRANSMIT_OK"
   exit 0
 }
 
@@ -157,6 +200,7 @@ if($Command -eq "full-green"){
   Write-Host "VTP_CLI_FULL_GREEN_OK"
   exit 0
 }
+
 if($Command -eq "dev-fast"){
   Run-PS (Join-Path $Scripts "_RUN_vtp_dev_fast_v1.ps1") @("-RepoRoot",$RepoRoot)
   exit 0
