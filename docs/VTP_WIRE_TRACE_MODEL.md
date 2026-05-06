@@ -1,1 +1,54 @@
-# VTP Wire Trace ModelnnVTP has two transport modes:nn1. Local filesystem reference mode.n2. Future wire adapter mode.nnThe current reference implementation uses filesystem drops under runtime/, so Wireshark cannot observe it as network traffic.nnFor Wireshark visibility, VTP needs a TCP or UDP wire adapter.nn## Clear trace headernnA packet capture tool should be able to see non-secret metadata:nn magic: VTP1n version: 1n frame_id: frame-...n session_id_hash: sha256(...)n sender_node_id_hash: sha256(...)n recipient_node_id_hash: sha256(...)n network_id_hash: sha256(...)n payload_sha256: sha256(...)n cipher_suite: ...n policy_mode: enforcenn## Encrypted bodynnThe payload body must be encrypted and authenticated.nnRecommended direction:nn header = clear, traceable, non-secretn body = encrypted payloadn aad = canonical header bytesn tag = authentication tag over header + ciphertextnnWireshark can identify VTP traffic and display frame/session metadata without exposing payload contents.nn## DLP relationshipnnDLP policy gates operate before accept.nnIn wire mode, the node should:nn receive packet -> verify header/body integrity -> decrypt if authorized -> run DLP policy -> accept/reject -> receiptnn## Current checkpointnnThe filesystem reference mode is currently proven through:nn .\vtp.ps1 transmit -To node-betan .\vtp.ps1 dlp-testn .\vtp.ps1 full-greenn
+# VTP Wire Trace Model
+
+VTP has two transport modes:
+
+1. Local filesystem reference mode.
+2. Future wire adapter mode.
+
+The current reference implementation uses filesystem drops under runtime/, so Wireshark cannot observe it as network traffic.
+
+For Wireshark visibility, VTP needs a TCP or UDP wire adapter.
+
+## Clear trace header
+
+A packet capture tool should be able to see non-secret metadata:
+
+ magic: VTP1
+ version: 1
+ frame_id: frame-...
+ session_id_hash: sha256(...)
+ sender_node_id_hash: sha256(...)
+ recipient_node_id_hash: sha256(...)
+ network_id_hash: sha256(...)
+ payload_sha256: sha256(...)
+ cipher_suite: ...
+ policy_mode: enforce
+
+## Encrypted body
+
+The payload body must be encrypted and authenticated.
+
+Recommended direction:
+
+ header = clear, traceable, non-secret
+ body = encrypted payload
+ aad = canonical header bytes
+ tag = authentication tag over header + ciphertext
+
+Wireshark can identify VTP traffic and display frame/session metadata without exposing payload contents.
+
+## DLP relationship
+
+DLP policy gates operate before accept.
+
+In wire mode, the node should:
+
+ receive packet -> verify header/body integrity -> decrypt if authorized -> run DLP policy -> accept/reject -> receipt
+
+## Current checkpoint
+
+The filesystem reference mode is currently proven through:
+
+ .\vtp.ps1 transmit -To node-beta
+ .\vtp.ps1 dlp-test
+ .\vtp.ps1 full-green
