@@ -26,6 +26,7 @@ if($Command -eq "help"){
   Write-Host "  .\vtp.ps1 install-node -NodeId node-beta"
   Write-Host "  .\vtp.ps1 send -To node-beta"
   Write-Host "  .\vtp.ps1 node-loop -NodeId node-beta"
+  Write-Host "  .\vtp.ps1 dlp-test"
   Write-Host "  .\vtp.ps1 dev-fast"
   Write-Host "  .\vtp.ps1 conformance"
   exit 0
@@ -37,6 +38,7 @@ if($Command -eq "smoke"){
     "scripts\vtp_node_loop_policy_v1.ps1",
     "scripts\vtp_node_loop_forever_v1.ps1",
     "scripts\vtp_policy_gate_v1.ps1",
+    "scripts\_selftest_vtp_dlp_negative_v1.ps1",
     "scripts\vtp_install_node_task_v1.ps1",
     "scripts\_RUN_vtp_dev_fast_v1.ps1",
     "scripts\_RUN_vtp_conformance_v1.ps1"
@@ -100,6 +102,7 @@ if($Command -eq "status"){
 
   exit 0
 }
+
 if($Command -eq "install-node"){
   Run-PS (Join-Path $Scripts "vtp_install_node_task_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
   exit 0
@@ -136,9 +139,15 @@ if($Command -eq "send"){
 
   Run-PS (Join-Path $Scripts "courier_open_session_v1.ps1") @("-RepoRoot",$RepoRoot,"-SessionId","session-alpha-beta-001","-SenderNodeId","node-alpha","-RecipientNodeId",$To,"-NetworkId","courier-internal-net-v1","-SessionRole","message-delivery")
 
-  Run-PS (Join-Path $Scripts "courier_transport_send_v1.ps1") @("-RepoRoot",$RepoRoot,"-MessagePath",$messagePath,"-SenderIdentity","courier-local@covenant","-RecipientIdentity","courier-local@covenant","-SenderNodeId","node-alpha","-RecipientNodeId",$To,"-NetworkId","courier-internal-net-v1","-SessionId","session-alpha-beta-001","-SenderRole","message-delivery","-DropRoot","runtime\nodes\node-beta\inbox\drop")
+  Run-PS (Join-Path $Scripts "courier_transport_send_v1.ps1") @("-RepoRoot",$RepoRoot,"-MessagePath",$messagePath,"-SenderIdentity","courier-local@covenant","-RecipientIdentity","courier-local@covenant","-SenderNodeId","node-alpha","-RecipientNodeId",$To,"-NetworkId","courier-internal-net-v1","-SessionId","session-alpha-beta-001","-SenderRole","message-delivery","-DropRoot",("runtime\nodes\" + $To + "\inbox\drop"))
 
   Write-Host "VTP_SEND_OK"
+  exit 0
+}
+
+if($Command -eq "dlp-test"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_dlp_negative_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
+  Write-Host "VTP_DLP_TEST_OK"
   exit 0
 }
 
