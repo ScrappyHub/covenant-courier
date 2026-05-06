@@ -28,6 +28,25 @@ function Get-FirstPropValue {
   return ""
 }
 
+function Get-DetailsObject {
+  param([Parameter(Mandatory=$true)]$Obj)
+  if($Obj.PSObject.Properties.Name -contains "details"){
+    if($null -ne $Obj.details){ return $Obj.details }
+  }
+  return $null
+}
+
+function Add-IfPresent {
+  param(
+    [Parameter(Mandatory=$true)][System.Collections.Generic.List[string]]$List,
+    [Parameter(Mandatory=$true)][string]$Name,
+    [AllowNull()][string]$Value
+  )
+  if(-not [string]::IsNullOrWhiteSpace($Value)){
+    [void]$List.Add($Name + "=" + $Value)
+  }
+}
+
 function Show-LatestReceiptLines {
   param(
     [Parameter(Mandatory=$true)][string]$Label,
@@ -53,23 +72,48 @@ function Show-LatestReceiptLines {
     if([string]::IsNullOrWhiteSpace($line)){ continue }
     try {
       $obj = $line | ConvertFrom-Json
+      $details = Get-DetailsObject -Obj $obj
 
       $schema = Get-FirstPropValue -Obj $obj -Names @("schema","receipt_schema","type")
       $time = Get-FirstPropValue -Obj $obj -Names @("time_utc","created_utc","timestamp_utc","utc","time")
+      $eventType = Get-FirstPropValue -Obj $obj -Names @("event_type","eventType","event","kind","action","decision","status","result")
+
       $frame = Get-FirstPropValue -Obj $obj -Names @("frame_id","frameId","frame","packet_id","packetId","id")
       $decision = Get-FirstPropValue -Obj $obj -Names @("decision","action","status","result","event","kind")
       $reason = Get-FirstPropValue -Obj $obj -Names @("reason","reason_code","message","detail","error","error_code")
       $pathValue = Get-FirstPropValue -Obj $obj -Names @("path","frame_path","dest","destination","output_path")
       $hashValue = Get-FirstPropValue -Obj $obj -Names @("payload_sha256","sha256","hash","packet_sha256","frame_sha256")
 
+      if($null -ne $details){
+        if([string]::IsNullOrWhiteSpace($frame)){
+          $frame = Get-FirstPropValue -Obj $details -Names @("frame_id","frameId","frame","packet_id","packetId","id")
+        }
+        if([string]::IsNullOrWhiteSpace($decision)){
+          $decision = Get-FirstPropValue -Obj $details -Names @("decision","action","status","result","event","kind")
+        }
+        if([string]::IsNullOrWhiteSpace($reason)){
+          $reason = Get-FirstPropValue -Obj $details -Names @("reason","reason_code","message","detail","error","error_code")
+        }
+        if([string]::IsNullOrWhiteSpace($hashValue)){
+          $hashValue = Get-FirstPropValue -Obj $details -Names @("payload_sha256","sha256","hash","packet_sha256","frame_sha256")
+        }
+        if([string]::IsNullOrWhiteSpace($pathValue)){
+          $pathValue = Get-FirstPropValue -Obj $details -Names @("accepted_root","rejected_root","frame_root","drop_root","path","frame_path","dest","destination","output_path")
+        }
+      }
+
+      if(-not [string]::IsNullOrWhiteSpace($eventType)){
+        $decision = $eventType
+      }
+
       $summary = New-Object System.Collections.Generic.List[string]
-      if(-not [string]::IsNullOrWhiteSpace($schema)){ [void]$summary.Add("schema=" + $schema) }
-      if(-not [string]::IsNullOrWhiteSpace($time)){ [void]$summary.Add("time=" + $time) }
-      if(-not [string]::IsNullOrWhiteSpace($frame)){ [void]$summary.Add("frame=" + $frame) }
-      if(-not [string]::IsNullOrWhiteSpace($decision)){ [void]$summary.Add("decision=" + $decision) }
-      if(-not [string]::IsNullOrWhiteSpace($reason)){ [void]$summary.Add("reason=" + $reason) }
-      if(-not [string]::IsNullOrWhiteSpace($hashValue)){ [void]$summary.Add("hash=" + $hashValue) }
-      if(-not [string]::IsNullOrWhiteSpace($pathValue)){ [void]$summary.Add("path=" + $pathValue) }
+      Add-IfPresent -List $summary -Name "schema" -Value $schema
+      Add-IfPresent -List $summary -Name "time" -Value $time
+      Add-IfPresent -List $summary -Name "frame" -Value $frame
+      Add-IfPresent -List $summary -Name "decision" -Value $decision
+      Add-IfPresent -List $summary -Name "reason" -Value $reason
+      Add-IfPresent -List $summary -Name "hash" -Value $hashValue
+      Add-IfPresent -List $summary -Name "path" -Value $pathValue
 
       if($summary.Count -gt 2){
         Write-Host (($summary.ToArray()) -join " ")
