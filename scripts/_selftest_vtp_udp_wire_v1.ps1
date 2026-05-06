@@ -9,31 +9,100 @@ $ErrorActionPreference = "Stop"
 
 $RepoRoot = (Resolve-Path $RepoRoot).Path
 $Scripts = Join-Path $RepoRoot "scripts"
+$Runtime = Join-Path $RepoRoot "runtime\wire_udp"
 $RunRoot = Join-Path $RepoRoot ("proofs\wire_udp_selftest\" + (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssfffZ"))
+if(-not (Test-Path -LiteralPath $Runtime)){ [void][IO.Directory]::CreateDirectory($Runtime) }
 [void][IO.Directory]::CreateDirectory($RunRoot)
-$outPath = Join-Path $RunRoot "listener.stdout.txt"
-$errPath = Join-Path $RunRoot "listener.stderr.txt"
-$ps = Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\powershell.exe"
-$listen = Join-Path $Scripts "vtp_udp_wire_listen_once_v1.ps1"
+$enc = [Text.UTF8Encoding]::new($false)
 $send = Join-Path $Scripts "vtp_udp_wire_send_v1.ps1"
+if(-not (Test-Path -LiteralPath $send -PathType Leaf)){ throw "VTP_UDP_WIRE_SELFTEST_FAIL:MISSING_SEND_SCRIPT" }
 
-$args = @("-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass","-File",$listen,"-RepoRoot",$RepoRoot,"-NodeId",$To,"-Port",[string]$Port,"-TimeoutMs","10000")
-$p = Start-Process -FilePath $ps -ArgumentList $args -RedirectStandardOutput $outPath -RedirectStandardError $errPath -PassThru -WindowStyle Hidden
-Start-Sleep -Milliseconds 700
-& $ps -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $send -RepoRoot $RepoRoot -To $To -HostName "127.0.0.1" -Port $Port
-$deadline = (Get-Date).AddSeconds(12)
-while(-not $p.HasExited -and (Get-Date) -lt $deadline){ Start-Sleep -Milliseconds 200 }
-if(-not $p.HasExited){
-  Stop-Process -Id $p.Id -Force
-  throw "VTP_UDP_WIRE_SELFTEST_FAIL:LISTENER_TIMEOUT"
+function Sha256Hex([byte[]]$Bytes){
+  $sha = [Security.Cryptography.SHA256]::Create()
+  try {
+    $hash = $sha.ComputeHash($Bytes)
+    return ([BitConverter]::ToString($hash).Replace("-","").ToLowerInvariant())
+  } finally {
+    $sha.Dispose()
+  }
 }
-if($p.ExitCode -ne 0){
-  $stderr = ""
-  if(Test-Path -LiteralPath $errPath){ $stderr = Get-Content -LiteralPath $errPath -Raw }
-  throw ("VTP_UDP_WIRE_SELFTEST_FAIL:LISTENER_EXIT_" + $p.ExitCode + ":" + $stderr)
+
+function Derive-Key([string]$Purpose){
+  $material = "vtp-wire-dev-key|session-alpha-beta-001|node-alpha|" + $To + "|" + $Purpose
+  $bytes = [Text.Encoding]::UTF8.GetBytes($material)
+  $sha = [Security.Cryptography.SHA256]::Create()
+  try {
+    return $sha.ComputeHash($bytes)
+  } finally {
+    $sha.Dispose()
+  }
 }
-$stdout = Get-Content -LiteralPath $outPath -Raw
-if($stdout -notmatch "VTP_UDP_WIRE_LISTEN_OK"){ throw "VTP_UDP_WIRE_SELFTEST_FAIL:NO_LISTEN_OK" }
-Write-Host $stdout.Trim()
+
+$udp = New-Object Net.Sockets.UdpClient($Port)
+$remote = New-Object Net.IPEndPoint([Net.IPAddress]::Any,0)
+try {
+  $async = $udp.BeginReceive($null,$null)
+  powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $send -RepoRoot $RepoRoot -To $To -HostName "127.0.0.1" -Port $Port
+  if($LASTEXITCODE -ne 0){ throw "VTP_UDP_WIRE_SELFTEST_FAIL:SEND_EXIT" }
+  if(-not $async.AsyncWaitHandle.WaitOne(10000)){ throw "VTP_UDP_WIRE_SELFTEST_FAIL:RECEIVE_TIMEOUT" }
+  $bytes = $udp.EndReceive($async,[ref]$remote)
+} finally {
+  $udp.Close()
+}
+
+$json = [Text.Encoding]::UTF8.GetString($bytes)
+$packet = $json | ConvertFrom-Json
+if([string]$packet.header.magic -ne "VTP1"){ throw "VTP_UDP_WIRE_SELFTEST_FAIL:BAD_MAGIC" }
+
+$headerJson = ($packet.header | ConvertTo-Json -Depth 20 -Compress)
+$headerBytes = [Text.Encoding]::UTF8.GetBytes($headerJson)
+$iv = [Convert]::FromBase64String([string]$packet.iv_b64)
+$cipherBytes = [Convert]::FromBase64String([string]$packet.ciphertext_b64)
+$tag = [Convert]::FromBase64String([string]$packet.tag_b64)
+$macKey = Derive-Key "hmac"
+$macInput = New-Object byte[] ($headerBytes.Length + $iv.Length + $cipherBytes.Length)
+[Array]::Copy($headerBytes,0,$macInput,0,$headerBytes.Length)
+[Array]::Copy($iv,0,$macInput,$headerBytes.Length,$iv.Length)
+[Array]::Copy($cipherBytes,0,$macInput,$headerBytes.Length + $iv.Length,$cipherBytes.Length)
+$hmac = New-Object Security.Cryptography.HMACSHA256(,$macKey)
+try {
+  $expectedTag = $hmac.ComputeHash($macInput)
+} finally {
+  $hmac.Dispose()
+}
+if((Sha256Hex $expectedTag) -ne (Sha256Hex $tag)){ throw "VTP_UDP_WIRE_SELFTEST_FAIL:BAD_AUTH_TAG" }
+
+$aesKey = Derive-Key "aes"
+$aes = [Security.Cryptography.Aes]::Create()
+$aes.Mode = [Security.Cryptography.CipherMode]::CBC
+$aes.Padding = [Security.Cryptography.PaddingMode]::PKCS7
+$aes.KeySize = 256
+$aes.Key = $aesKey
+$aes.IV = $iv
+$decryptor = $aes.CreateDecryptor()
+try {
+  $plainBytes = $decryptor.TransformFinalBlock($cipherBytes,0,$cipherBytes.Length)
+} finally {
+  $decryptor.Dispose()
+  $aes.Dispose()
+}
+$plainHash = Sha256Hex $plainBytes
+if($plainHash -ne [string]$packet.header.payload_sha256){ throw "VTP_UDP_WIRE_SELFTEST_FAIL:PAYLOAD_HASH_MISMATCH" }
+
+$frameId = [string]$packet.header.frame_id
+$packetPath = Join-Path $Runtime ($frameId + ".received.packet.json")
+$plainPath = Join-Path $Runtime ($frameId + ".plaintext.txt")
+[IO.File]::WriteAllText($packetPath, ($json + [string][char]10), $enc)
+[IO.File]::WriteAllText($plainPath, ([Text.Encoding]::UTF8.GetString($plainBytes) + [string][char]10), $enc)
+
+$summary = Join-Path $RunRoot "summary.txt"
+$summaryLines = New-Object System.Collections.Generic.List[string]
+[void]$summaryLines.Add("frame_id=" + $frameId)
+[void]$summaryLines.Add("packet_path=" + $packetPath)
+[void]$summaryLines.Add("plaintext_path=" + $plainPath)
+[IO.File]::WriteAllText($summary, (($summaryLines.ToArray() -join [string][char]10) + [string][char]10), $enc)
+
+Write-Host ("VTP_UDP_WIRE_LISTEN_OK: " + $frameId)
+Write-Host ("VTP_UDP_WIRE_RECEIVED_PACKET: " + $packetPath)
 Write-Host ("VTP_UDP_WIRE_SELFTEST_RUN: " + $RunRoot)
 Write-Host "VTP_UDP_WIRE_SELFTEST_OK"
