@@ -165,7 +165,17 @@ foreach($frameDir in $frames){
 
     $dest = Join-Path $acceptedRoot $frameDir.Name
     if(Test-Path -LiteralPath $dest){ Remove-Item -LiteralPath $dest -Recurse -Force }
-    Move-Item -LiteralPath $frameDir.FullName -Destination $dest
+    if(-not (Test-Path -LiteralPath $frameDir.FullName -PathType Container)){
+      continue
+    }
+    try {
+      Move-Item -LiteralPath $frameDir.FullName -Destination $dest -ErrorAction Stop
+    } catch {
+      if(-not (Test-Path -LiteralPath $frameDir.FullName -PathType Container)){
+        continue
+      }
+      throw
+    }
 
     $receiptPath = Append-CourierReceipt -RepoRoot $RepoRoot -Receipt ([ordered]@{
       schema = "courier.transport.receipt.v1"
@@ -189,7 +199,17 @@ foreach($frameDir in $frames){
   catch {
     $dest = Join-Path $rejectedRoot $frameDir.Name
     if(Test-Path -LiteralPath $dest){ Remove-Item -LiteralPath $dest -Recurse -Force }
-    Move-Item -LiteralPath $frameDir.FullName -Destination $dest
+    if(-not (Test-Path -LiteralPath $frameDir.FullName -PathType Container)){
+      continue
+    }
+    try {
+      Move-Item -LiteralPath $frameDir.FullName -Destination $dest -ErrorAction Stop
+    } catch {
+      if(-not (Test-Path -LiteralPath $frameDir.FullName -PathType Container)){
+        continue
+      }
+      throw
+    }
 
     $reasonPath = Join-Path $dest "reject_reason.txt"
     $enc = New-Object System.Text.UTF8Encoding($false)
