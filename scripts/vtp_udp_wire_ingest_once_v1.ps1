@@ -8,6 +8,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "vtp_wire_key_envelope_v1.ps1")
 
 $RepoRoot = (Resolve-Path $RepoRoot).Path
 $PolicyGate = Join-Path $RepoRoot "scripts\vtp_policy_gate_v1.ps1"
@@ -35,14 +36,7 @@ function Sha256Hex([byte[]]$Bytes){
 }
 
 function Derive-Key([string]$Purpose){
-  $material = "vtp-wire-dev-key|session-alpha-beta-001|node-alpha|" + $NodeId + "|" + $Purpose
-  $bytes = [Text.Encoding]::UTF8.GetBytes($material)
-  $sha = [Security.Cryptography.SHA256]::Create()
-  try {
-    return $sha.ComputeHash($bytes)
-  } finally {
-    $sha.Dispose()
-  }
+  return Get-VtpWireKeyBytes -RepoRoot $RepoRoot -RecipientNodeId $NodeId -Purpose $Purpose
 }
 
 function Write-Receipt([string]$FrameId,[string]$Decision,[string]$Reason,[string]$PathValue,[string]$PayloadSha256){

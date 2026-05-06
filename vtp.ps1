@@ -223,4 +223,10 @@ if($Command -eq "wire-ingest"){
   Write-Host "VTP_WIRE_INGEST_OK"
   exit 0
 }
+
+if($Command -eq "wire-key-test"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_wire_key_envelope_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
+  Write-Host "VTP_WIRE_KEY_TEST_OK"
+  exit 0
+}
 throw "UNKNOWN_VTP_COMMAND:$Command"
