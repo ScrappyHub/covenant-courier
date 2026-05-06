@@ -63,12 +63,28 @@ if($Command -eq "status"){
   $rejected = Join-Path $RepoRoot ("runtime\nodes\" + $NodeId + "\rejected")
   $receipts = Join-Path $RepoRoot "proofs\receipts"
 
+  $dropItems = @(Get-ChildItem -LiteralPath $drop -Directory -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
+  $acceptedItems = @(Get-ChildItem -LiteralPath $accepted -Directory -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
+  $rejectedItems = @(Get-ChildItem -LiteralPath $rejected -Directory -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
+
   Write-Host "VTP STATUS"
   Write-Host ("Repo: " + $RepoRoot)
   Write-Host ("Node: " + $NodeId)
-  Write-Host ("Inbox drop: " + @(Get-ChildItem -LiteralPath $drop -Directory -ErrorAction SilentlyContinue).Count)
-  Write-Host ("Accepted: " + @(Get-ChildItem -LiteralPath $accepted -Directory -ErrorAction SilentlyContinue).Count)
-  Write-Host ("Rejected: " + @(Get-ChildItem -LiteralPath $rejected -Directory -ErrorAction SilentlyContinue).Count)
+  Write-Host ("Inbox drop: " + $dropItems.Count)
+  if($dropItems.Count -gt 0){ Write-Host ("Latest drop: " + $dropItems[0].Name) }
+  Write-Host ("Accepted: " + $acceptedItems.Count)
+  if($acceptedItems.Count -gt 0){ Write-Host ("Latest accepted: " + $acceptedItems[0].Name) }
+  Write-Host ("Rejected: " + $rejectedItems.Count)
+  if($rejectedItems.Count -gt 0){
+    Write-Host ("Latest rejected: " + $rejectedItems[0].Name)
+    $reason = Join-Path $rejectedItems[0].FullName "reject_reason.txt"
+    if(Test-Path -LiteralPath $reason -PathType Leaf){
+      $reasonText = (Get-Content -LiteralPath $reason -Raw).Trim()
+      if(-not [string]::IsNullOrWhiteSpace($reasonText)){
+        Write-Host ("Latest reject reason: " + $reasonText)
+      }
+    }
+  }
   Write-Host ("Receipts: " + $receipts)
 
   $task = Get-ScheduledTask -TaskName "VTP Node Loop" -ErrorAction SilentlyContinue
@@ -84,7 +100,6 @@ if($Command -eq "status"){
 
   exit 0
 }
-
 if($Command -eq "install-node"){
   Run-PS (Join-Path $Scripts "vtp_install_node_task_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
   exit 0
