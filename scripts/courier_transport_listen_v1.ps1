@@ -139,8 +139,8 @@ foreach($frameDir in $frames){
       throw "COURIER_TRANSPORT_FAIL:PAYLOAD_HASH_MISMATCH"
     }
 
-    $verifyOut = Join-Path $env:TEMP "courier_verify_out.txt"
-    $verifyErr = Join-Path $env:TEMP "courier_verify_err.txt"
+    $verifyOut = Join-Path $env:TEMP ("courier_verify_out_" + $frameDir.Name + "_" + [guid]::NewGuid().ToString("N") + ".txt")
+    $verifyErr = Join-Path $env:TEMP ("courier_verify_err_" + $frameDir.Name + "_" + [guid]::NewGuid().ToString("N") + ".txt")
     if(Test-Path -LiteralPath $verifyOut){ Remove-Item -LiteralPath $verifyOut -Force }
     if(Test-Path -LiteralPath $verifyErr){ Remove-Item -LiteralPath $verifyErr -Force }
 
