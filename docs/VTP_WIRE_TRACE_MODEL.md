@@ -1,23 +1,32 @@
 # VTP Wire Trace Model
 
-VTP has two transport modes:
+VTP has three current transport/proof modes:
 
 1. Local filesystem reference mode.
 2. UDP wire smoke adapter mode.
+3. UDP wire ingest mode.
 
 The filesystem reference implementation uses drops under runtime/. Wireshark cannot observe that mode as network traffic.
 
-The UDP wire smoke adapter emits actual localhost UDP traffic on port 47731.
+The UDP wire smoke and ingest adapters emit actual localhost UDP traffic.
 
 ## Wireshark
 
-Start capture on the loopback adapter, then run:
+For smoke packets, start capture on the loopback adapter, then run:
 
     .\vtp.ps1 wire-smoke
 
 Use this display filter:
 
     udp.port == 47731
+
+For ingest packets, start capture on the loopback adapter, then run:
+
+    .\vtp.ps1 wire-ingest
+
+Use this display filter:
+
+    udp.port == 47732
 
 ## Clear trace header
 
@@ -47,6 +56,20 @@ Current smoke adapter shape:
 
 Wireshark can identify VTP traffic and display packet/session metadata without exposing payload contents.
 
+## UDP ingest path
+
+wire-ingest proves:
+
+    receive UDP packet
+    verify VTP header magic
+    verify HMAC authentication tag
+    decrypt payload
+    verify payload hash
+    materialize courier.transport_frame.v2
+    run DLP policy gate
+    move to accepted or rejected
+    append vtp.udp_wire_ingest.receipt.v1
+
 ## DLP relationship
 
 DLP policy gates operate before accept.
@@ -63,3 +86,8 @@ The current local/wire proof surface is:
     .\vtp.ps1 dlp-test
     .\vtp.ps1 full-green
     .\vtp.ps1 wire-smoke
+    .\vtp.ps1 wire-ingest
+
+Latest green checkpoint tag:
+
+    vtp-v1-udp-wire-ingest-green

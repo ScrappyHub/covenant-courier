@@ -59,7 +59,24 @@ Wireshark display filter:
 
     udp.port == 47731
 
-The UDP wire adapter emits localhost UDP traffic with a clear non-secret trace header and encrypted/authenticated payload body.
+## UDP wire ingest proof
+
+    .\vtp.ps1 wire-ingest
+
+wire-ingest proves the real receive-side shape:
+
+    UDP packet -> verify/decrypt -> materialize frame -> DLP policy gate -> accept/reject -> receipt
+
+Expected:
+
+    VTP_UDP_WIRE_INGEST_ACCEPT_OK
+    VTP_UDP_WIRE_INGEST_RECEIPT_OK
+    VTP_UDP_WIRE_INGEST_SELFTEST_OK
+    VTP_WIRE_INGEST_OK
+
+The UDP wire ingest receipt is written to:
+
+    proofs\receipts\vtp_udp_wire_ingest.ndjson
 
 ## Optional dev runtime
 
@@ -79,3 +96,5 @@ Local runtime/proof state is ignored by Git:
 
     vtp-v1-dev-runtime-dlp
     vtp-v1-udp-wire-smoke
+    vtp-v1-queue-claim-wire-green
+    vtp-v1-udp-wire-ingest-green
