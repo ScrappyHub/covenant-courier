@@ -2,7 +2,8 @@ param(
   [string]$RepoRoot = ".",
   [string]$NodeId = "node-beta",
   [int]$Port = 47732,
-  [int]$TimeoutMs = 10000
+  [int]$TimeoutMs = 10000,
+  [string]$PacketPath = ""
 )
 
 Set-StrictMode -Version Latest
@@ -58,13 +59,20 @@ function Write-Receipt([string]$FrameId,[string]$Decision,[string]$Reason,[strin
   [IO.File]::AppendAllText($ReceiptPath, ($json + [string][char]10), $enc)
 }
 
-$udp = New-Object Net.Sockets.UdpClient($Port)
-$udp.Client.ReceiveTimeout = $TimeoutMs
-$remote = New-Object Net.IPEndPoint([Net.IPAddress]::Any,0)
-try {
-  $bytes = $udp.Receive([ref]$remote)
-} finally {
-  $udp.Close()
+if(-not [string]::IsNullOrWhiteSpace($PacketPath)){
+  if(-not (Test-Path -LiteralPath $PacketPath -PathType Leaf)){
+    throw "VTP_UDP_WIRE_INGEST_FAIL:MISSING_PACKET_PATH"
+  }
+  $bytes = [IO.File]::ReadAllBytes($PacketPath)
+} else {
+  $udp = New-Object Net.Sockets.UdpClient($Port)
+  $udp.Client.ReceiveTimeout = $TimeoutMs
+  $remote = New-Object Net.IPEndPoint([Net.IPAddress]::Any,0)
+  try {
+    $bytes = $udp.Receive([ref]$remote)
+  } finally {
+    $udp.Close()
+  }
 }
 
 $json = [Text.Encoding]::UTF8.GetString($bytes)
