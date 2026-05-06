@@ -229,4 +229,9 @@ if($Command -eq "wire-key-test"){
   Write-Host "VTP_WIRE_KEY_TEST_OK"
   exit 0
 }
+
+if($Command -eq "receipts"){
+  Run-PS (Join-Path $Scripts "vtp_receipts_latest_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
+  exit 0
+}
 throw "UNKNOWN_VTP_COMMAND:$Command"

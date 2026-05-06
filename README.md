@@ -98,3 +98,14 @@ Local runtime/proof state is ignored by Git:
     vtp-v1-udp-wire-smoke
     vtp-v1-queue-claim-wire-green
     vtp-v1-udp-wire-ingest-green
+
+## Wire key envelope and receipts
+
+See:
+
+    docs\VTP_WIRE_KEY_AND_RECEIPTS.md
+
+Commands:
+
+    .\vtp.ps1 wire-key-test
+    .\vtp.ps1 receipts
