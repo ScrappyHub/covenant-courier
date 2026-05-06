@@ -7,33 +7,22 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $RepoRoot = (Resolve-Path $RepoRoot).Path
-$Vtp = Join-Path $RepoRoot "vtp.ps1"
-
-$Drop = Join-Path $RepoRoot ("runtime\nodes\" + $NodeId + "\inbox\drop")
-$Rejected = Join-Path $RepoRoot ("runtime\nodes\" + $NodeId + "\rejected")
-$FrameName = "frame-dlp-negative-blocked-role"
-$FrameDir = Join-Path $Drop $FrameName
-
-function Ensure-Dir([string]$Path){
-  if(-not (Test-Path -LiteralPath $Path)){
-    [void][IO.Directory]::CreateDirectory($Path)
-  }
+$PolicyGate = Join-Path $RepoRoot "scripts\vtp_policy_gate_v1.ps1"
+if(-not (Test-Path -LiteralPath $PolicyGate -PathType Leaf)){
+  throw "VTP_DLP_NEGATIVE_FAIL:MISSING_POLICY_GATE"
 }
 
-function Reset-Dir([string]$Path){
-  if(Test-Path -LiteralPath $Path){
-    Remove-Item -LiteralPath $Path -Recurse -Force
-  }
-  [void][IO.Directory]::CreateDirectory($Path)
-}
+$RunRoot = Join-Path $RepoRoot "runtime\dlp_selftest\negative_blocked_role"
+$FrameDir = Join-Path $RunRoot "frame-dlp-negative-blocked-role"
 
-Ensure-Dir $Drop
-Ensure-Dir $Rejected
-Reset-Dir $FrameDir
+if(Test-Path -LiteralPath $RunRoot){
+  Remove-Item -LiteralPath $RunRoot -Recurse -Force
+}
+[void][IO.Directory]::CreateDirectory($FrameDir)
 
 $frame = [ordered]@{
   schema = "courier.transport_frame.v2"
-  frame_id = $FrameName
+  frame_id = "frame-dlp-negative-blocked-role"
   created_utc = "2026-01-01T00:00:00.0000000Z"
   sender_identity = "courier-local@covenant"
   recipient_identity = "courier-local@covenant"
@@ -53,30 +42,16 @@ $frame = [ordered]@{
   [Text.UTF8Encoding]::new($false)
 )
 
-& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
-  -File $Vtp `
-  node-loop `
-  -RepoRoot $RepoRoot `
-  -NodeId $NodeId
+$out = & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $PolicyGate -RepoRoot $RepoRoot -FrameDir $FrameDir 2>&1
+$text = ($out | Out-String).Trim()
+$code = $LASTEXITCODE
 
-if($LASTEXITCODE -ne 0){
-  throw "VTP_DLP_NEGATIVE_FAIL:NODE_LOOP_EXIT"
+if($code -ne 42){
+  throw ("VTP_DLP_NEGATIVE_FAIL:EXPECTED_DENY_EXIT_42:GOT_" + $code + ":" + $text)
 }
 
-$RejectedDir = Join-Path $Rejected $FrameName
-$ReasonPath = Join-Path $RejectedDir "reject_reason.txt"
-
-if(-not (Test-Path -LiteralPath $RejectedDir -PathType Container)){
-  throw "VTP_DLP_NEGATIVE_FAIL:FRAME_NOT_REJECTED"
-}
-
-if(-not (Test-Path -LiteralPath $ReasonPath -PathType Leaf)){
-  throw "VTP_DLP_NEGATIVE_FAIL:MISSING_REJECT_REASON"
-}
-
-$reason = Get-Content -LiteralPath $ReasonPath -Raw
-if($reason -notmatch "VTP_POLICY_DENY:SENDER_ROLE_DENIED:blocked"){
-  throw ("VTP_DLP_NEGATIVE_FAIL:WRONG_REASON:" + $reason)
+if($text -notmatch "VTP_POLICY_DENY:SENDER_ROLE_DENIED:blocked"){
+  throw ("VTP_DLP_NEGATIVE_FAIL:WRONG_REASON:" + $text)
 }
 
 Write-Host "VTP_DLP_NEGATIVE_REJECT_OK"

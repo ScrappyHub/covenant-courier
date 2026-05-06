@@ -21,16 +21,33 @@ if(-not (Test-Path -LiteralPath $Rejected)){ [void][IO.Directory]::CreateDirecto
 $frames = @(Get-ChildItem -LiteralPath $Drop -Directory -ErrorAction SilentlyContinue | Sort-Object FullName)
 
 foreach($frame in $frames){
+  if(-not (Test-Path -LiteralPath $frame.FullName -PathType Container)){
+    continue
+  }
+
   $out = & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $PolicyGate -RepoRoot $RepoRoot -FrameDir $frame.FullName 2>&1
   $text = ($out | Out-String).Trim()
   $code = $LASTEXITCODE
 
   if($code -eq 42){
+    if(-not (Test-Path -LiteralPath $frame.FullName -PathType Container)){
+      continue
+    }
+
     $dest = Join-Path $Rejected $frame.Name
     if(Test-Path -LiteralPath $dest){ Remove-Item -LiteralPath $dest -Recurse -Force }
-    Move-Item -LiteralPath $frame.FullName -Destination $dest -Force
-    [IO.File]::WriteAllText((Join-Path $dest "reject_reason.txt"), ($text + "`n"), [Text.UTF8Encoding]::new($false))
-    Write-Host ("VTP_POLICY_REJECT_OK: " + $dest)
+
+    try {
+      Move-Item -LiteralPath $frame.FullName -Destination $dest -Force -ErrorAction Stop
+      [IO.File]::WriteAllText((Join-Path $dest "reject_reason.txt"), ($text + "`n"), [Text.UTF8Encoding]::new($false))
+      Write-Host ("VTP_POLICY_REJECT_OK: " + $dest)
+    } catch {
+      if(Test-Path -LiteralPath $dest -PathType Container){
+        Write-Host ("VTP_POLICY_REJECT_ALREADY_MOVED_OK: " + $dest)
+      } else {
+        throw
+      }
+    }
   } elseif($code -ne 0){
     throw ("VTP_NODE_LOOP_POLICY_FAIL:POLICY_GATE_EXIT_" + $code + ":" + $text)
   } else {
