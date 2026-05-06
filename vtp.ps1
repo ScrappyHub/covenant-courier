@@ -217,4 +217,10 @@ if($Command -eq "wire-smoke"){
  Write-Host "VTP_WIRE_SMOKE_OK"
  exit 0
 }
+
+if($Command -eq "wire-ingest"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_ingest_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
+  Write-Host "VTP_WIRE_INGEST_OK"
+  exit 0
+}
 throw "UNKNOWN_VTP_COMMAND:$Command"
