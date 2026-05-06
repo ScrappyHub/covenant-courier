@@ -27,6 +27,7 @@ if($Command -eq "help"){
   Write-Host "  .\vtp.ps1 send -To node-beta"
   Write-Host "  .\vtp.ps1 node-loop -NodeId node-beta"
   Write-Host "  .\vtp.ps1 dlp-test"
+  Write-Host "  .\vtp.ps1 full-green"
   Write-Host "  .\vtp.ps1 dev-fast"
   Write-Host "  .\vtp.ps1 conformance"
   exit 0
@@ -151,6 +152,11 @@ if($Command -eq "dlp-test"){
   exit 0
 }
 
+if($Command -eq "full-green"){
+  Run-PS (Join-Path $RepoRoot "vtp_full_green.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
+  Write-Host "VTP_CLI_FULL_GREEN_OK"
+  exit 0
+}
 if($Command -eq "dev-fast"){
   Run-PS (Join-Path $Scripts "_RUN_vtp_dev_fast_v1.ps1") @("-RepoRoot",$RepoRoot)
   exit 0
