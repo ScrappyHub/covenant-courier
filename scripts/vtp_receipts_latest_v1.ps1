@@ -19,7 +19,9 @@ function Get-FirstPropValue {
   )
   foreach($name in $Names){
     if($Obj.PSObject.Properties.Name -contains $name){
-      $value = $Obj.$name
+      $prop = $Obj.PSObject.Properties[$name]
+      if($null -eq $prop){ continue }
+      $value = $prop.Value
       if($null -ne $value -and -not [string]::IsNullOrWhiteSpace([string]$value)){
         return [string]$value
       }
@@ -31,7 +33,8 @@ function Get-FirstPropValue {
 function Get-DetailsObject {
   param([Parameter(Mandatory=$true)]$Obj)
   if($Obj.PSObject.Properties.Name -contains "details"){
-    if($null -ne $Obj.details){ return $Obj.details }
+    $detailsProp = $Obj.PSObject.Properties["details"]
+    if($null -ne $detailsProp -and $null -ne $detailsProp.Value){ return $detailsProp.Value }
   }
   return $null
 }
