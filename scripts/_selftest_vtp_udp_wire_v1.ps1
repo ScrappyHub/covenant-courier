@@ -6,6 +6,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "vtp_wire_key_envelope_v1.ps1")
 
 $RepoRoot = (Resolve-Path $RepoRoot).Path
 $Scripts = Join-Path $RepoRoot "scripts"
@@ -28,14 +29,7 @@ function Sha256Hex([byte[]]$Bytes){
 }
 
 function Derive-Key([string]$Purpose){
-  $material = "vtp-wire-dev-key|session-alpha-beta-001|node-alpha|" + $To + "|" + $Purpose
-  $bytes = [Text.Encoding]::UTF8.GetBytes($material)
-  $sha = [Security.Cryptography.SHA256]::Create()
-  try {
-    return $sha.ComputeHash($bytes)
-  } finally {
-    $sha.Dispose()
-  }
+  return Get-VtpWireKeyBytes -RepoRoot $RepoRoot -RecipientNodeId $To -Purpose $Purpose
 }
 
 $udp = New-Object Net.Sockets.UdpClient($Port)
