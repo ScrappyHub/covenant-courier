@@ -234,3 +234,12 @@ Not yet:
     public v1 release
 
 Before public release, the release checklist and threat model must be reviewed and the command surface must remain simple for non-developer users.
+## Release status
+
+Current release status:
+
+    docs\RELEASE_STATUS.md
+
+Final product-core checkpoint tag:
+
+    covenant-courier-product-core-v1-finalized
