@@ -1,126 +1,182 @@
 # Covenant Courier
 
-Covenant Courier contains the reference implementation of VTP, the Verifiable Transport Protocol.
+Covenant Courier is a governed secure message and notification courier system.
 
-## VTP v1 quickstart
+It is built around a simple rule:
 
-Primary local development command:
+    no delivery without policy, receipts, and traceability
 
-    cd C:\dev\covenant-courier
+Covenant Courier is the product layer. VTP is the transport/protocol substrate underneath it.
+
+## What this is
+
+Covenant Courier packages product messages, sends them through VTP, receives and policy-gates frames, emits product-level receipts, and builds a tamper-evident receipt chain.
+
+It is not a general chat app.
+
+It is not only a packet transport.
+
+It is not meant to run invisibly in the background by default.
+
+The current product core is local-first and CLI-driven. Runtime/proof state is intentionally ignored by git.
+
+## Current status
+
+Current checkpoint:
+
+    covenant-courier-receipt-chain-v1-green
+
+Current product core:
+
+    schema-test          GREEN
+    prepare              GREEN
+    send                 GREEN
+    receive              GREEN
+    receive-negative     GREEN
+    receipts             GREEN
+    receipt-chain        GREEN
+    verify               GREEN
+    VTP substrate         GREEN
+
+Primary product proof:
+
+    .\courier.ps1 verify
+
+Expected:
+
+    COVENANT_COURIER_VERIFY_OK
+
+Protocol substrate proof:
+
+    .\vtp.ps1 verify
+
+Expected:
+
+    VTP_VERIFY_ALL_OK
+
+## Command map
+
+### Product CLI
+
+Show help:
+
+    .\courier.ps1 help
+
+Verify schemas:
+
+    .\courier.ps1 schema-test
+
+Prepare a product message:
+
+    .\courier.ps1 prepare
+
+Send a product message through VTP:
+
+    .\courier.ps1 send
+
+Receive and accept the latest sent product frame:
+
+    .\courier.ps1 receive
+
+Run the product receive negative test:
+
+    .\courier.ps1 receive-negative
+
+Inspect product receipts:
+
+    .\courier.ps1 receipts
+
+Build and verify the product receipt chain:
+
+    .\courier.ps1 receipt-chain
+
+Run the full product proof:
+
+    .\courier.ps1 verify
+
+### VTP protocol CLI
+
+Run VTP verification:
+
+    .\vtp.ps1 verify
+
+Run local transmit:
+
     .\vtp.ps1 transmit -To node-beta
 
-transmit performs the full local reference flow in one command:
-
-    open session -> send frame -> activate receiver once -> DLP policy gate -> accept/reject -> status
-
-Expected success tokens:
-
-    VTP_SEND_OK
-    VTP_POLICY_ALLOW_OK
-    COURIER_TRANSPORT_LISTEN_ACCEPT_OK
-    VTP_TRANSMIT_OK
-
-## Status
-
-    .\vtp.ps1 status
-
-Status shows queue depth and latest frame IDs.
-
-## DLP proof
-
-    .\vtp.ps1 dlp-test
-
-Expected:
-
-    VTP_DLP_NEGATIVE_REJECT_OK
-    VTP_DLP_TEST_OK
-
-## Full green proof
-
-    .\vtp.ps1 full-green
-
-Expected:
-
-    VTP_FULL_GREEN_OK
-    VTP_CLI_FULL_GREEN_OK
-
-## UDP wire smoke proof
+Run UDP wire smoke:
 
     .\vtp.ps1 wire-smoke
 
-Expected:
+Run DLP test:
 
-    VTP_UDP_WIRE_SEND_OK
-    VTP_UDP_WIRE_LISTEN_OK
-    VTP_UDP_WIRE_SELFTEST_OK
-    VTP_WIRE_SMOKE_OK
+    .\vtp.ps1 dlp-test
 
-Wireshark display filter:
+Inspect VTP receipts:
 
-    udp.port == 47731
+    .\vtp.ps1 receipts
 
-## UDP wire ingest proof
+## Product flow
 
-    .\vtp.ps1 wire-ingest
+The current product flow is:
 
-wire-ingest proves the real receive-side shape:
+    prepare product message
+    send through VTP
+    receive through VTP node policy loop
+    accept or reject
+    emit product receipt
+    chain product receipts
+    verify product + VTP substrate
 
-    UDP packet -> verify/decrypt -> materialize frame -> DLP policy gate -> accept/reject -> receipt
+Product receipts link:
 
-Expected:
+    message_id
+    frame_id
+    payload_sha256
+    event_type
+    decision
+    reason_code
 
-    VTP_UDP_WIRE_INGEST_ACCEPT_OK
-    VTP_UDP_WIRE_INGEST_RECEIPT_OK
-    VTP_UDP_WIRE_INGEST_SELFTEST_OK
-    VTP_WIRE_INGEST_OK
+## Receipts
 
-The UDP wire ingest receipt is written to:
+Product receipts are written to:
+
+    proofs\receipts\covenant_courier_product.ndjson
+
+Product receipt chain is written to:
+
+    proofs\receipts\covenant_courier_product.chain.ndjson
+
+Transport receipts are written to:
+
+    proofs\receipts\courier_transport.ndjson
+
+UDP wire ingest receipts are written to:
 
     proofs\receipts\vtp_udp_wire_ingest.ndjson
 
-## Optional dev runtime
+The proofs directory is intentionally ignored by git.
 
-    .\vtp.ps1 run-node -NodeId node-beta
+## Schemas
 
-This is optional. The primary local user flow is transmit, not a two-terminal workflow.
+Product schemas live in:
 
-## Runtime state
+    schemas\covenant_courier.message.v1.json
+    schemas\covenant_courier.notification.v1.json
+    schemas\covenant_courier.policy_decision.v1.json
+    schemas\covenant_courier.product_receipt.v1.json
 
-Local runtime/proof state is ignored by Git:
+Schema test:
 
-    proofs/
-    registry/
-    runtime/
+    .\courier.ps1 schema-test
 
-## Checkpoint tags
+## Docs
 
-    vtp-v1-dev-runtime-dlp
-    vtp-v1-udp-wire-smoke
-    vtp-v1-queue-claim-wire-green
-    vtp-v1-udp-wire-ingest-green
-
-## Wire key envelope and receipts
-
-See:
-
-    docs\VTP_WIRE_KEY_AND_RECEIPTS.md
-
-Commands:
-
-    .\vtp.ps1 wire-key-test
-    .\vtp.ps1 receipts
-
-## Product spec
-
-Covenant Courier product definition:
+Product spec:
 
     docs\COVENANT_COURIER_PRODUCT_SPEC_V1.md
 
-VTP remains the proven protocol substrate. Covenant Courier is the product layer on top.
-
-## Product safety docs
-
-Product threat model:
+Threat model:
 
     docs\COVENANT_COURIER_THREAT_MODEL_V1.md
 
@@ -128,79 +184,53 @@ Release checklist:
 
     docs\COVENANT_COURIER_RELEASE_CHECKLIST_V1.md
 
-## Product schema test
+Wire trace model:
 
-Run:
+    docs\VTP_WIRE_TRACE_MODEL.md
 
-    .\courier.ps1 schema-test
+Wire key and receipts:
 
-Expected:
+    docs\VTP_WIRE_KEY_AND_RECEIPTS.md
 
-    COVENANT_COURIER_SCHEMA_TEST_OK
-## Product message prepare
+Roadmap:
 
-Run:
+    docs\ROADMAP.md
 
-    .\courier.ps1 prepare
+## Runtime and git hygiene
 
-Expected:
+Expected ignored runtime state:
 
-    COVENANT_COURIER_PREPARE_OK
-## Product message send
+    !! proofs/
+    !! registry/
+    !! runtime/
 
-Run:
+These directories contain local proof outputs, sessions, receipts, runtime frames, and generated state.
 
-    .\courier.ps1 send
+They should not be committed.
 
-Expected:
+## Current limitations
 
-    COVENANT_COURIER_SEND_OK
+This is a local CLI product-core checkpoint, not a polished public app release.
 
-Product receipts:
+Known remaining work:
 
-    proofs\receipts\covenant_courier_product.ndjson
-## Product receipt inspection
+    fixed binary wire header
+    product receive rejection cases
+    product receipt schema hardening
+    production key/session model
+    replay protection
+    service mode only if explicit
+    UI/workbench
+    public release package
 
-Run:
+## Release posture
 
-    .\courier.ps1 receipts
+Current state:
 
-Expected:
+    product-core green checkpoint
 
-    COVENANT_COURIER_RECEIPTS_OK
-## Product verification
+Not yet:
 
-Run:
+    public v1 release
 
-    .\courier.ps1 verify
-
-Expected:
-
-    COVENANT_COURIER_VERIFY_OK
-## Product message receive
-
-Run:
-
-    .\courier.ps1 receive
-
-Expected:
-
-    COVENANT_COURIER_RECEIVE_OK
-## Product receive negative test
-
-Run:
-
-    .\courier.ps1 receive-negative
-
-Expected:
-
-    COVENANT_COURIER_RECEIVE_NEGATIVE_OK
-## Product receipt chain
-
-Run:
-
-    .\courier.ps1 receipt-chain
-
-Expected:
-
-    COVENANT_COURIER_RECEIPT_CHAIN_OK
+Before public release, the release checklist and threat model must be reviewed and the command surface must remain simple for non-developer users.
