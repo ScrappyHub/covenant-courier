@@ -79,9 +79,41 @@ function Expect-IngestFail {
     [string]$ExpectedToken
   )
 
-  $out = & $ps -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $ingest -RepoRoot $RepoRoot -NodeId $To -PacketPath $PacketPath 2>&1
-  $code = $LASTEXITCODE
-  $text = ($out | Out-String)
+  $safeName = ($Name -replace "[^A-Za-z0-9_.-]","_")
+  $stdoutPath = Join-Path $RunRoot ($safeName + ".stdout.txt")
+  $stderrPath = Join-Path $RunRoot ($safeName + ".stderr.txt")
+
+  $args = @(
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    $ingest,
+    "-RepoRoot",
+    $RepoRoot,
+    "-NodeId",
+    $To,
+    "-PacketPath",
+    $PacketPath
+  )
+
+  $proc = Start-Process -FilePath $ps -ArgumentList $args -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
+  $proc.WaitForExit()
+
+  $code = $proc.ExitCode
+  $stdout = ""
+  $stderr = ""
+
+  if(Test-Path -LiteralPath $stdoutPath -PathType Leaf){
+    $stdout = Get-Content -LiteralPath $stdoutPath -Raw
+  }
+
+  if(Test-Path -LiteralPath $stderrPath -PathType Leaf){
+    $stderr = Get-Content -LiteralPath $stderrPath -Raw
+  }
+
+  $text = $stdout + "`n" + $stderr
 
   if($code -eq 0){
     throw ("VTP_WIRE_NEGATIVE_FAIL:" + $Name + ":UNEXPECTED_SUCCESS")
