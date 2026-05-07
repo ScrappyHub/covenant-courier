@@ -136,7 +136,23 @@ if($Command -eq "send"){
   $messagePath = Join-Path $RepoRoot "test_vectors\courier_v1\transport_hardening\prep\message.tokenized.json"
 
   if(-not (Test-Path -LiteralPath $messagePath -PathType Leaf)){
-    throw "VTP_SEND_FAIL:MISSING_PREPARED_MESSAGE"
+    $prepDir = Split-Path -Parent $messagePath
+    [void][IO.Directory]::CreateDirectory($prepDir)
+
+    $prepared = [ordered]@{
+      schema = "courier.message.tokenized.v1"
+      message_id = "vtp-demo-" + (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssfffZ")
+      created_utc = (Get-Date).ToUniversalTime().ToString("o")
+      sender_identity = "courier-local@covenant"
+      recipient_identity = "courier-local@covenant"
+      payload_text = "covenant courier local preview message"
+      preview = "Covenant Courier local preview"
+    }
+
+    $json = $prepared | ConvertTo-Json -Depth 20 -Compress
+    [IO.File]::WriteAllText($messagePath, ($json + [string][char]10), [Text.UTF8Encoding]::new($false))
+
+    Write-Host ("VTP_SEND_PREPARED_MESSAGE_BOOTSTRAP_OK: " + $messagePath)
   }
 
   Run-PS (Join-Path $Scripts "courier_open_session_v1.ps1") @(
