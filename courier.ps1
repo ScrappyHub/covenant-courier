@@ -3,6 +3,8 @@ param(
   [string]$RepoRoot = ".",
   [string]$From = "local/sender/demo",
   [string]$To = "local/recipient/demo",
+  [string]$RecipientIdentity = "local/recipient/demo",
+  [string]$RecipientNodeId = "node-beta",
   [string]$PayloadText = "hello from covenant courier"
 )
 
@@ -50,12 +52,12 @@ if($Command -eq "schema-test"){
 
 
 if($Command -eq "prepare"){
-  Run-PS (Join-Path $Scripts "courier_prepare_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-From",$From,"-To",$To,"-PayloadText",$PayloadText)
+  Run-PS (Join-Path $Scripts "courier_prepare_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-From",$From,"-To",$RecipientIdentity,"-RecipientNodeId",$RecipientNodeId,"-PayloadText",$PayloadText)
   exit 0
 }
 
 if($Command -eq "send"){
-  Run-PS (Join-Path $Scripts "courier_send_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-From",$From,"-To",$To,"-PayloadText",$PayloadText)
+  Run-PS (Join-Path $Scripts "courier_send_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-From",$From,"-RecipientIdentity",$RecipientIdentity,"-RecipientNodeId",$RecipientNodeId,"-PayloadText",$PayloadText)
   exit 0
 }
 

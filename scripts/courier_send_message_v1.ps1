@@ -1,7 +1,7 @@
 param(
   [string]$RepoRoot = ".",
   [string]$From = "local/sender/demo",
-  [string]$To = "node-beta",
+  [string]$RecipientNodeId = "node-beta",
   [string]$RecipientIdentity = "local/recipient/demo",
   [string]$PayloadText = "hello from covenant courier",
   [string]$PolicyProfile = "default"
@@ -103,7 +103,7 @@ $sendText = Run-Child -Script $Vtp -ChildArgs @(
   "-RepoRoot",
   $RepoRoot,
   "-To",
-  $To
+  $RecipientNodeId
 )
 
 $frameId = ""
