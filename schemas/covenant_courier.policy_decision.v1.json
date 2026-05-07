@@ -1,0 +1,51 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "covenant_courier.policy_decision.v1",
+    "title":  "Covenant Courier Policy Decision v1",
+    "type":  "object",
+    "additionalProperties":  false,
+    "required":  [
+                     "schema",
+                     "decision_id",
+                     "message_id",
+                     "decision",
+                     "reason_code",
+                     "policy_profile",
+                     "decided_utc"
+                 ],
+    "properties":  {
+                       "schema":  {
+                                      "const":  "covenant_courier.policy_decision.v1"
+                                  },
+                       "decision_id":  {
+                                           "type":  "string",
+                                           "minLength":  1
+                                       },
+                       "message_id":  {
+                                          "type":  "string",
+                                          "minLength":  1
+                                      },
+                       "decision":  {
+                                        "enum":  [
+                                                     "allow",
+                                                     "reject",
+                                                     "quarantine",
+                                                     "require_approval",
+                                                     "redact_notification",
+                                                     "require_stronger_session"
+                                                 ]
+                                    },
+                       "reason_code":  {
+                                           "type":  "string",
+                                           "minLength":  1
+                                       },
+                       "policy_profile":  {
+                                              "type":  "string",
+                                              "minLength":  1
+                                          },
+                       "decided_utc":  {
+                                           "type":  "string",
+                                           "minLength":  1
+                                       }
+                   }
+}

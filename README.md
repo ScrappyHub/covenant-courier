@@ -127,3 +127,13 @@ Product threat model:
 Release checklist:
 
     docs\COVENANT_COURIER_RELEASE_CHECKLIST_V1.md
+
+## Product schema test
+
+Run:
+
+    .\courier.ps1 schema-test
+
+Expected:
+
+    COVENANT_COURIER_SCHEMA_TEST_OK

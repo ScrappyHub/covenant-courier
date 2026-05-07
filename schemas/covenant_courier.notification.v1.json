@@ -1,0 +1,43 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "covenant_courier.notification.v1",
+    "title":  "Covenant Courier Notification v1",
+    "type":  "object",
+    "additionalProperties":  false,
+    "required":  [
+                     "schema",
+                     "message_id",
+                     "recipient_identity",
+                     "display_mode",
+                     "preview",
+                     "created_utc"
+                 ],
+    "properties":  {
+                       "schema":  {
+                                      "const":  "covenant_courier.notification.v1"
+                                  },
+                       "message_id":  {
+                                          "type":  "string",
+                                          "minLength":  1
+                                      },
+                       "recipient_identity":  {
+                                                  "type":  "string",
+                                                  "minLength":  1
+                                              },
+                       "display_mode":  {
+                                            "enum":  [
+                                                         "minimal",
+                                                         "generic",
+                                                         "redacted",
+                                                         "full_safe"
+                                                     ]
+                                        },
+                       "preview":  {
+                                       "type":  "string"
+                                   },
+                       "created_utc":  {
+                                           "type":  "string",
+                                           "minLength":  1
+                                       }
+                   }
+}

@@ -1,0 +1,70 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "covenant_courier.message.v1",
+    "title":  "Covenant Courier Message v1",
+    "type":  "object",
+    "additionalProperties":  false,
+    "required":  [
+                     "schema",
+                     "message_id",
+                     "sender_identity",
+                     "recipient_identity",
+                     "sender_node_id",
+                     "recipient_node_id",
+                     "session_id",
+                     "policy_profile",
+                     "notification_preview",
+                     "payload_sha256",
+                     "created_utc"
+                 ],
+    "properties":  {
+                       "schema":  {
+                                      "const":  "covenant_courier.message.v1"
+                                  },
+                       "message_id":  {
+                                          "type":  "string",
+                                          "minLength":  1
+                                      },
+                       "sender_identity":  {
+                                               "type":  "string",
+                                               "minLength":  1
+                                           },
+                       "recipient_identity":  {
+                                                  "type":  "string",
+                                                  "minLength":  1
+                                              },
+                       "sender_node_id":  {
+                                              "type":  "string",
+                                              "minLength":  1
+                                          },
+                       "recipient_node_id":  {
+                                                 "type":  "string",
+                                                 "minLength":  1
+                                             },
+                       "organization_id":  {
+                                               "type":  [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                           },
+                       "session_id":  {
+                                          "type":  "string",
+                                          "minLength":  1
+                                      },
+                       "policy_profile":  {
+                                              "type":  "string",
+                                              "minLength":  1
+                                          },
+                       "notification_preview":  {
+                                                    "type":  "string"
+                                                },
+                       "payload_sha256":  {
+                                              "type":  "string",
+                                              "pattern":  "^[a-f0-9]{64}$"
+                                          },
+                       "created_utc":  {
+                                           "type":  "string",
+                                           "minLength":  1
+                                       }
+                   }
+}
