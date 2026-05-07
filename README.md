@@ -159,3 +159,12 @@ Expected:
 Product receipts:
 
     proofs\receipts\covenant_courier_product.ndjson
+## Product receipt inspection
+
+Run:
+
+    .\courier.ps1 receipts
+
+Expected:
+
+    COVENANT_COURIER_RECEIPTS_OK
