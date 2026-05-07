@@ -177,3 +177,12 @@ Run:
 Expected:
 
     COVENANT_COURIER_VERIFY_OK
+## Product message receive
+
+Run:
+
+    .\courier.ps1 receive
+
+Expected:
+
+    COVENANT_COURIER_RECEIVE_OK

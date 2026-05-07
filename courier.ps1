@@ -38,6 +38,7 @@ if($Command -eq "help"){
   Write-Host "  .\courier.ps1 schema-test"
   Write-Host "  .\courier.ps1 prepare"
   Write-Host "  .\courier.ps1 send"
+  Write-Host "  .\courier.ps1 receive"
   Write-Host "  .\courier.ps1 receipts"
   Write-Host "  .\courier.ps1 verify"
   Write-Host ""
@@ -69,6 +70,11 @@ if($Command -eq "receipts"){
 
 if($Command -eq "verify"){
   Run-PS (Join-Path $Scripts "courier_verify_all_v1.ps1") @("-RepoRoot",$RepoRoot)
+  exit 0
+}
+
+if($Command -eq "receive"){
+  Run-PS (Join-Path $Scripts "courier_receive_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$RecipientNodeId)
   exit 0
 }
 throw ("UNKNOWN_COURIER_COMMAND:" + $Command)
