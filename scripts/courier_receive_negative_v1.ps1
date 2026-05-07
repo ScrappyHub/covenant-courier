@@ -54,9 +54,40 @@ $lines = @(
 
 $ps = Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\powershell.exe"
 
-$out = & $ps -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Receive -RepoRoot $RepoRoot -NodeId $NodeId -ProductReceiptPath $TempReceipt 2>&1
-$code = $LASTEXITCODE
-$text = ($out | Out-String)
+$stdoutPath = Join-Path $RunRoot "receive-negative.stdout.txt"
+$stderrPath = Join-Path $RunRoot "receive-negative.stderr.txt"
+
+$args = @(
+  "-NoProfile",
+  "-NonInteractive",
+  "-ExecutionPolicy",
+  "Bypass",
+  "-File",
+  $Receive,
+  "-RepoRoot",
+  $RepoRoot,
+  "-NodeId",
+  $NodeId,
+  "-ProductReceiptPath",
+  $TempReceipt
+)
+
+$proc = Start-Process -FilePath $ps -ArgumentList $args -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
+$proc.WaitForExit()
+
+$code = $proc.ExitCode
+$stdout = ""
+$stderr = ""
+
+if(Test-Path -LiteralPath $stdoutPath -PathType Leaf){
+  $stdout = Get-Content -LiteralPath $stdoutPath -Raw
+}
+
+if(Test-Path -LiteralPath $stderrPath -PathType Leaf){
+  $stderr = Get-Content -LiteralPath $stderrPath -Raw
+}
+
+$text = $stdout + "`n" + $stderr
 
 if($code -eq 0){
   Write-Host $text.Trim()
