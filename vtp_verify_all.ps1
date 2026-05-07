@@ -28,6 +28,7 @@ function Run-Step {
 Run-Step -Name "wire-key-test" -Args @("wire-key-test","-RepoRoot",$RepoRoot,"-To",$To)
 Run-Step -Name "wire-smoke" -Args @("wire-smoke","-RepoRoot",$RepoRoot,"-To",$To)
 Run-Step -Name "wire-ingest" -Args @("wire-ingest","-RepoRoot",$RepoRoot,"-To",$To)
+Run-Step -Name "wire-negative" -Args @("wire-negative","-RepoRoot",$RepoRoot,"-To",$To)
 Run-Step -Name "transmit" -Args @("transmit","-RepoRoot",$RepoRoot,"-To",$To)
 Run-Step -Name "dlp-test" -Args @("dlp-test","-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
 Run-Step -Name "full-green" -Args @("full-green","-RepoRoot",$RepoRoot,"-To",$To)

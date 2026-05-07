@@ -239,4 +239,10 @@ if($Command -eq "verify"){
   Run-PS (Join-Path $RepoRoot "vtp_verify_all.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
   exit 0
 }
+
+if($Command -eq "wire-negative"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_negative_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
+  Write-Host "VTP_WIRE_NEGATIVE_OK"
+  exit 0
+}
 throw "UNKNOWN_VTP_COMMAND:$Command"
