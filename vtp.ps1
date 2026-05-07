@@ -166,25 +166,126 @@ if($Command -eq "send"){
 }
 
 if($Command -eq "transmit"){
-  $accepted = Join-Path $RepoRoot ("runtime\nodes\" + $To + "\accepted")
-  $drop = Join-Path $RepoRoot ("runtime\nodes\" + $To + "\inbox\drop")
-  $beforeAccepted = @(Get-ChildItem -LiteralPath $accepted -Directory -ErrorAction SilentlyContinue).Count
+  $sendText = Run-PS $PSCommandPath @("send","-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
 
-  Run-PS $PSCommandPath @("send","-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
-  Run-PS $PSCommandPath @("node-loop","-RepoRoot",$RepoRoot,"-NodeId",$To)
+  $frameId = ""
+  foreach($line in ($sendText -split "`n")){
+    if($line -match 'COURIER_TRANSPORT_SEND_OK:\s+(.+)
+
+if($Command -eq "dlp-test"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_dlp_negative_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
+  Write-Host "VTP_DLP_TEST_OK"
+  exit 0
+}
+
+if($Command -eq "full-green"){
+  Run-PS (Join-Path $RepoRoot "vtp_full_green.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
+  Write-Host "VTP_CLI_FULL_GREEN_OK"
+  exit 0
+}
+
+if($Command -eq "dev-fast"){
+  Run-PS (Join-Path $Scripts "_RUN_vtp_dev_fast_v1.ps1") @("-RepoRoot",$RepoRoot)
+  exit 0
+}
+
+if($Command -eq "conformance"){
+  Run-PS (Join-Path $Scripts "_RUN_vtp_conformance_v1.ps1") @("-RepoRoot",$RepoRoot)
+  exit 0
+}
+
+
+if($Command -eq "wire-smoke"){
+ Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
+ Write-Host "VTP_WIRE_SMOKE_OK"
+ exit 0
+}
+
+if($Command -eq "wire-ingest"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_ingest_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
+  Write-Host "VTP_WIRE_INGEST_OK"
+  exit 0
+}
+
+if($Command -eq "wire-key-test"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_wire_key_envelope_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
+  Write-Host "VTP_WIRE_KEY_TEST_OK"
+  exit 0
+}
+
+if($Command -eq "receipts"){
+  Run-PS (Join-Path $Scripts "vtp_receipts_latest_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
+  exit 0
+}
+
+if($Command -eq "verify"){
+  Run-PS (Join-Path $RepoRoot "vtp_verify_all.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
+  exit 0
+}
+
+if($Command -eq "wire-negative"){
+  Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_negative_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
+  Write-Host "VTP_WIRE_NEGATIVE_OK"
+  exit 0
+}
+throw "UNKNOWN_VTP_COMMAND:$Command"
+){
+      $sendRel = $Matches[1].Trim()
+      $frameId = Split-Path -Leaf $sendRel
+    }
+  }
+
+  if([string]::IsNullOrWhiteSpace($frameId)){
+    throw "VTP_TRANSMIT_FAIL:FRAME_ID_NOT_FOUND"
+  }
+
+  $acceptedPath = Join-Path $RepoRoot ("runtime\nodes\" + $To + "\accepted\" + $frameId)
+  $dropPath = Join-Path $RepoRoot ("runtime\nodes\" + $To + "\inbox\drop\" + $frameId)
+  $rejectedPath = Join-Path $RepoRoot ("runtime\nodes\" + $To + "\rejected\" + $frameId)
+
+  $maxAttempts = 8
+  $attempt = 0
+
+  while($attempt -lt $maxAttempts){
+    if(Test-Path -LiteralPath $acceptedPath -PathType Container){
+      break
+    }
+
+    if(Test-Path -LiteralPath $rejectedPath -PathType Container){
+      break
+    }
+
+    Run-PS $PSCommandPath @("node-loop","-RepoRoot",$RepoRoot,"-NodeId",$To)
+
+    if(Test-Path -LiteralPath $acceptedPath -PathType Container){
+      break
+    }
+
+    if(Test-Path -LiteralPath $rejectedPath -PathType Container){
+      break
+    }
+
+    Start-Sleep -Milliseconds 250
+    $attempt++
+  }
+
+  if(-not (Test-Path -LiteralPath $acceptedPath -PathType Container)){
+    Write-Host ("VTP_TRANSMIT_FRAME: " + $frameId)
+    Write-Host ("VTP_TRANSMIT_ATTEMPTS: " + $attempt)
+    Write-Host ("VTP_TRANSMIT_ACCEPTED_EXISTS: " + (Test-Path -LiteralPath $acceptedPath))
+    Write-Host ("VTP_TRANSMIT_DROP_EXISTS: " + (Test-Path -LiteralPath $dropPath))
+    Write-Host ("VTP_TRANSMIT_REJECTED_EXISTS: " + (Test-Path -LiteralPath $rejectedPath))
+
+    if(Test-Path -LiteralPath $rejectedPath -PathType Container){
+      throw ("VTP_TRANSMIT_FAIL:FRAME_REJECTED:" + $frameId)
+    }
+
+    throw ("VTP_TRANSMIT_FAIL:FRAME_NOT_ACCEPTED:" + $frameId)
+  }
+
   Run-PS $PSCommandPath @("status","-RepoRoot",$RepoRoot,"-NodeId",$To)
 
-  $afterAccepted = @(Get-ChildItem -LiteralPath $accepted -Directory -ErrorAction SilentlyContinue).Count
-  $dropCount = @(Get-ChildItem -LiteralPath $drop -Directory -ErrorAction SilentlyContinue).Count
-
-  if($afterAccepted -le $beforeAccepted){
-    throw ("VTP_TRANSMIT_FAIL:ACCEPT_NOT_INCREMENTED:BEFORE_" + $beforeAccepted + ":AFTER_" + $afterAccepted)
-  }
-
-  if($dropCount -ne 0){
-    throw ("VTP_TRANSMIT_FAIL:DROP_NOT_EMPTY:" + $dropCount)
-  }
-
+  Write-Host ("VTP_TRANSMIT_LATEST_ACCEPTED: " + $frameId)
   Write-Host "VTP_TRANSMIT_OK"
   exit 0
 }
