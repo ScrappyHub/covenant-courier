@@ -118,23 +118,57 @@ if($payloadSha -notmatch "^[a-f0-9]{64}$"){
   throw "COURIER_RECEIVE_FAIL:BAD_PAYLOAD_SHA256"
 }
 
-Run-Child -Script $Vtp -ChildArgs @(
-  "node-loop",
-  "-RepoRoot",
-  $RepoRoot,
-  "-NodeId",
-  $NodeId
-)
-
 $acceptedPath = Join-Path $RepoRoot ("runtime\nodes\" + $NodeId + "\accepted\" + $frameId)
 $dropPath = Join-Path $RepoRoot ("runtime\nodes\" + $NodeId + "\inbox\drop\" + $frameId)
 $rejectedPath = Join-Path $RepoRoot ("runtime\nodes\" + $NodeId + "\rejected\" + $frameId)
 
+$maxAttempts = 8
+$attempt = 0
+
+while($attempt -lt $maxAttempts){
+  if(Test-Path -LiteralPath $acceptedPath -PathType Container){
+    break
+  }
+
+  if(Test-Path -LiteralPath $rejectedPath -PathType Container){
+    break
+  }
+
+  Run-Child -Script $Vtp -ChildArgs @(
+    "node-loop",
+    "-RepoRoot",
+    $RepoRoot,
+    "-NodeId",
+    $NodeId
+  )
+
+  if(Test-Path -LiteralPath $acceptedPath -PathType Container){
+    break
+  }
+
+  if(Test-Path -LiteralPath $rejectedPath -PathType Container){
+    break
+  }
+
+  Start-Sleep -Milliseconds 250
+  $attempt++
+}
+
 if(-not (Test-Path -LiteralPath $acceptedPath -PathType Container)){
   Write-Host ("COURIER_RECEIVE_FRAME: " + $frameId)
+  Write-Host ("COURIER_RECEIVE_ATTEMPTS: " + $attempt)
   Write-Host ("COURIER_RECEIVE_ACCEPTED_EXISTS: " + (Test-Path -LiteralPath $acceptedPath))
   Write-Host ("COURIER_RECEIVE_DROP_EXISTS: " + (Test-Path -LiteralPath $dropPath))
   Write-Host ("COURIER_RECEIVE_REJECTED_EXISTS: " + (Test-Path -LiteralPath $rejectedPath))
+
+  if(Test-Path -LiteralPath $rejectedPath -PathType Container){
+    $reasonPath = Join-Path $rejectedPath "reject_reason.txt"
+    if(Test-Path -LiteralPath $reasonPath -PathType Leaf){
+      Write-Host ("COURIER_RECEIVE_REJECT_REASON: " + (Get-Content -LiteralPath $reasonPath -Raw).Trim())
+    }
+    throw ("COURIER_RECEIVE_FAIL:FRAME_REJECTED:" + $frameId)
+  }
+
   throw ("COURIER_RECEIVE_FAIL:FRAME_NOT_ACCEPTED:" + $frameId)
 }
 
