@@ -170,66 +170,7 @@ if($Command -eq "transmit"){
 
   $frameId = ""
   foreach($line in ($sendText -split "`n")){
-    if($line -match 'COURIER_TRANSPORT_SEND_OK:\s+(.+)
-
-if($Command -eq "dlp-test"){
-  Run-PS (Join-Path $Scripts "_selftest_vtp_dlp_negative_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
-  Write-Host "VTP_DLP_TEST_OK"
-  exit 0
-}
-
-if($Command -eq "full-green"){
-  Run-PS (Join-Path $RepoRoot "vtp_full_green.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
-  Write-Host "VTP_CLI_FULL_GREEN_OK"
-  exit 0
-}
-
-if($Command -eq "dev-fast"){
-  Run-PS (Join-Path $Scripts "_RUN_vtp_dev_fast_v1.ps1") @("-RepoRoot",$RepoRoot)
-  exit 0
-}
-
-if($Command -eq "conformance"){
-  Run-PS (Join-Path $Scripts "_RUN_vtp_conformance_v1.ps1") @("-RepoRoot",$RepoRoot)
-  exit 0
-}
-
-
-if($Command -eq "wire-smoke"){
- Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
- Write-Host "VTP_WIRE_SMOKE_OK"
- exit 0
-}
-
-if($Command -eq "wire-ingest"){
-  Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_ingest_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
-  Write-Host "VTP_WIRE_INGEST_OK"
-  exit 0
-}
-
-if($Command -eq "wire-key-test"){
-  Run-PS (Join-Path $Scripts "_selftest_vtp_wire_key_envelope_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
-  Write-Host "VTP_WIRE_KEY_TEST_OK"
-  exit 0
-}
-
-if($Command -eq "receipts"){
-  Run-PS (Join-Path $Scripts "vtp_receipts_latest_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
-  exit 0
-}
-
-if($Command -eq "verify"){
-  Run-PS (Join-Path $RepoRoot "vtp_verify_all.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
-  exit 0
-}
-
-if($Command -eq "wire-negative"){
-  Run-PS (Join-Path $Scripts "_selftest_vtp_udp_wire_negative_v1.ps1") @("-RepoRoot",$RepoRoot,"-To",$To)
-  Write-Host "VTP_WIRE_NEGATIVE_OK"
-  exit 0
-}
-throw "UNKNOWN_VTP_COMMAND:$Command"
-){
+    if($line -match "COURIER_TRANSPORT_SEND_OK:\s+(.+)$"){
       $sendRel = $Matches[1].Trim()
       $frameId = Split-Path -Leaf $sendRel
     }
