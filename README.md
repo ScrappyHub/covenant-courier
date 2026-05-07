@@ -146,3 +146,16 @@ Run:
 Expected:
 
     COVENANT_COURIER_PREPARE_OK
+## Product message send
+
+Run:
+
+    .\courier.ps1 send
+
+Expected:
+
+    COVENANT_COURIER_SEND_OK
+
+Product receipts:
+
+    proofs\receipts\covenant_courier_product.ndjson

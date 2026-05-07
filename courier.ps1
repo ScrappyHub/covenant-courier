@@ -35,6 +35,7 @@ if($Command -eq "help"){
   Write-Host "  .\courier.ps1 help"
   Write-Host "  .\courier.ps1 schema-test"
   Write-Host "  .\courier.ps1 prepare"
+  Write-Host "  .\courier.ps1 send"
   Write-Host ""
   Write-Host "Protocol substrate:"
   Write-Host "  .\vtp.ps1 verify"
@@ -49,6 +50,11 @@ if($Command -eq "schema-test"){
 
 if($Command -eq "prepare"){
   Run-PS (Join-Path $Scripts "courier_prepare_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-From",$From,"-To",$To,"-PayloadText",$PayloadText)
+  exit 0
+}
+
+if($Command -eq "send"){
+  Run-PS (Join-Path $Scripts "courier_send_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-From",$From,"-To",$To,"-PayloadText",$PayloadText)
   exit 0
 }
 throw ("UNKNOWN_COURIER_COMMAND:" + $Command)
