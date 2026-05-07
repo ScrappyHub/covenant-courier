@@ -43,17 +43,17 @@ function Run-Child {
 }
 
 $lines = @(Get-Content -LiteralPath $ProductReceipt -ErrorAction Stop)
-$receipts = New-Object System.Collections.Generic.List[object]
+$receipts = @()
 
 foreach($line in $lines){
   if([string]::IsNullOrWhiteSpace($line)){ continue }
   $obj = $line | ConvertFrom-Json
-  [void]$receipts.Add($obj)
+  $receipts += $obj
 }
 
 $acceptedFrames = New-Object 'System.Collections.Generic.HashSet[string]'
 
-foreach($r in @($receipts)){
+foreach($r in $receipts){
   $decision = ""
   $frame = ""
 
@@ -72,7 +72,7 @@ foreach($r in @($receipts)){
 
 $target = $null
 
-for($i = $receipts.Count - 1; $i -ge 0; $i--){
+for($i = @($receipts).Count - 1; $i -ge 0; $i--){
   $r = $receipts[$i]
 
   $decision = ""
