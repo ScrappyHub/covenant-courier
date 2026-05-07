@@ -155,6 +155,65 @@ if($Command -eq "send"){
     Write-Host ("VTP_SEND_PREPARED_MESSAGE_BOOTSTRAP_OK: " + $messagePath)
   }
 
+  $nodeRoot = Join-Path $RepoRoot "registry\nodes"
+  $netRoot = Join-Path $RepoRoot "registry\networks"
+  [void][IO.Directory]::CreateDirectory($nodeRoot)
+  [void][IO.Directory]::CreateDirectory($netRoot)
+
+  $alphaPath = Join-Path $nodeRoot "node-alpha.json"
+  $betaPath = Join-Path $nodeRoot "node-beta.json"
+  $netPath = Join-Path $netRoot "courier-internal-net-v1.json"
+
+  if(-not (Test-Path -LiteralPath $alphaPath -PathType Leaf)){
+    $alpha = [ordered]@{
+      schema = "courier.node_registry.v1"
+      node_id = "node-alpha"
+      node_name = "Node Alpha"
+      node_role = "sender"
+      principal = "courier-local@covenant"
+      status = "active"
+      created_utc = (Get-Date).ToUniversalTime().ToString("o")
+      last_seen_utc = $null
+      allowed_namespaces = @("courier/message")
+      tags = @("release-demo")
+    }
+    [IO.File]::WriteAllText($alphaPath, (($alpha | ConvertTo-Json -Depth 20 -Compress) + [string][char]10), [Text.UTF8Encoding]::new($false))
+    Write-Host ("VTP_DEMO_REGISTRY_NODE_OK: " + $alphaPath)
+  }
+
+  if(-not (Test-Path -LiteralPath $betaPath -PathType Leaf)){
+    $beta = [ordered]@{
+      schema = "courier.node_registry.v1"
+      node_id = "node-beta"
+      node_name = "Node Beta"
+      node_role = "receiver"
+      principal = "courier-local@covenant"
+      status = "active"
+      created_utc = (Get-Date).ToUniversalTime().ToString("o")
+      last_seen_utc = $null
+      allowed_namespaces = @("courier/message")
+      tags = @("release-demo")
+    }
+    [IO.File]::WriteAllText($betaPath, (($beta | ConvertTo-Json -Depth 20 -Compress) + [string][char]10), [Text.UTF8Encoding]::new($false))
+    Write-Host ("VTP_DEMO_REGISTRY_NODE_OK: " + $betaPath)
+  }
+
+  if(-not (Test-Path -LiteralPath $netPath -PathType Leaf)){
+    $net = [ordered]@{
+      schema = "courier.network_registry.v1"
+      network_id = "courier-internal-net-v1"
+      network_name = "Courier Internal Net"
+      transport_kind = "filesystem-drop"
+      listener_port = 47151
+      binding_mode = "dedicated"
+      visibility = "private"
+      status = "active"
+      allowed_nodes = @("node-alpha","node-beta")
+      created_utc = (Get-Date).ToUniversalTime().ToString("o")
+    }
+    [IO.File]::WriteAllText($netPath, (($net | ConvertTo-Json -Depth 20 -Compress) + [string][char]10), [Text.UTF8Encoding]::new($false))
+    Write-Host ("VTP_DEMO_REGISTRY_NETWORK_OK: " + $netPath)
+  }
   Run-PS (Join-Path $Scripts "courier_open_session_v1.ps1") @(
     "-RepoRoot",$RepoRoot,
     "-SessionId","session-alpha-beta-001",
