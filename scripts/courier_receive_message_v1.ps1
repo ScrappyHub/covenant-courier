@@ -1,6 +1,7 @@
 param(
   [string]$RepoRoot = ".",
-  [string]$NodeId = "node-beta"
+  [string]$NodeId = "node-beta",
+  [string]$ProductReceiptPath = ""
 )
 
 Set-StrictMode -Version Latest
@@ -11,6 +12,9 @@ $Courier = Join-Path $RepoRoot "courier.ps1"
 $Vtp = Join-Path $RepoRoot "vtp.ps1"
 $ReceiptRoot = Join-Path $RepoRoot "proofs\receipts"
 $ProductReceipt = Join-Path $ReceiptRoot "covenant_courier_product.ndjson"
+if(-not [string]::IsNullOrWhiteSpace($ProductReceiptPath)){
+  $ProductReceipt = $ProductReceiptPath
+}
 
 [void][IO.Directory]::CreateDirectory($ReceiptRoot)
 

@@ -186,3 +186,12 @@ Run:
 Expected:
 
     COVENANT_COURIER_RECEIVE_OK
+## Product receive negative test
+
+Run:
+
+    .\courier.ps1 receive-negative
+
+Expected:
+
+    COVENANT_COURIER_RECEIVE_NEGATIVE_OK

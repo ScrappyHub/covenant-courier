@@ -48,6 +48,7 @@ function Run-Step {
 Run-Step -Name "schema-test" -Script $Courier -ChildArgs @("schema-test","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_SCHEMA_TEST_OK"
 Run-Step -Name "prepare" -Script $Courier -ChildArgs @("prepare","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_PREPARE_OK"
 Run-Step -Name "send" -Script $Courier -ChildArgs @("send","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_SEND_OK"
+Run-Step -Name "receive-negative" -Script $Courier -ChildArgs @("receive-negative","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_RECEIVE_NEGATIVE_OK"
 Run-Step -Name "receive" -Script $Courier -ChildArgs @("receive","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_RECEIVE_OK"
 Run-Step -Name "receipts" -Script $Courier -ChildArgs @("receipts","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_RECEIPTS_OK"
 Run-Step -Name "vtp-verify" -Script $Vtp -ChildArgs @("verify","-RepoRoot",$RepoRoot) -ExpectedToken "VTP_VERIFY_ALL_OK"
