@@ -109,3 +109,11 @@ Commands:
 
     .\vtp.ps1 wire-key-test
     .\vtp.ps1 receipts
+
+## Product spec
+
+Covenant Courier product definition:
+
+    docs\COVENANT_COURIER_PRODUCT_SPEC_V1.md
+
+VTP remains the proven protocol substrate. Covenant Courier is the product layer on top.
