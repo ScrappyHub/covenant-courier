@@ -1,6 +1,9 @@
 param(
   [Parameter(Position=0)][string]$Command = "help",
-  [string]$RepoRoot = "."
+  [string]$RepoRoot = ".",
+  [string]$From = "local/sender/demo",
+  [string]$To = "local/recipient/demo",
+  [string]$PayloadText = "hello from covenant courier"
 )
 
 Set-StrictMode -Version Latest
@@ -31,6 +34,7 @@ if($Command -eq "help"){
   Write-Host "Commands:"
   Write-Host "  .\courier.ps1 help"
   Write-Host "  .\courier.ps1 schema-test"
+  Write-Host "  .\courier.ps1 prepare"
   Write-Host ""
   Write-Host "Protocol substrate:"
   Write-Host "  .\vtp.ps1 verify"
@@ -42,4 +46,9 @@ if($Command -eq "schema-test"){
   exit 0
 }
 
+
+if($Command -eq "prepare"){
+  Run-PS (Join-Path $Scripts "courier_prepare_message_v1.ps1") @("-RepoRoot",$RepoRoot,"-From",$From,"-To",$To,"-PayloadText",$PayloadText)
+  exit 0
+}
 throw ("UNKNOWN_COURIER_COMMAND:" + $Command)

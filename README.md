@@ -137,3 +137,12 @@ Run:
 Expected:
 
     COVENANT_COURIER_SCHEMA_TEST_OK
+## Product message prepare
+
+Run:
+
+    .\courier.ps1 prepare
+
+Expected:
+
+    COVENANT_COURIER_PREPARE_OK
