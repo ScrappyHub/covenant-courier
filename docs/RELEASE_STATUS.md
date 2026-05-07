@@ -100,3 +100,17 @@ prints:
     COVENANT_COURIER_VERIFY_OK
 
 and git status shows no source changes other than ignored runtime/proof directories.
+## Corrected final tag
+
+Authoritative final product-core checkpoint:
+
+    covenant-courier-product-core-v1-finalized-green-fixed
+
+Superseded finalization tags:
+
+    covenant-courier-product-core-v1-finalized
+    covenant-courier-product-core-v1-finalized-green
+
+Reason:
+
+    The corrected tag was created after VTP transmit was repaired and the product core was re-proven with COVENANT_COURIER_VERIFY_OK and VTP_VERIFY_ALL_OK.

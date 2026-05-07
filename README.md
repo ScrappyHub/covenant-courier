@@ -243,3 +243,12 @@ Current release status:
 Final product-core checkpoint tag:
 
     covenant-courier-product-core-v1-finalized
+## Tags
+
+Tag guidance:
+
+    docs\TAGS.md
+
+Authoritative final product-core tag:
+
+    covenant-courier-product-core-v1-finalized-green-fixed
