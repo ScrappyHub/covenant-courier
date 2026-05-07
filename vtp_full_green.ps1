@@ -15,17 +15,17 @@ if(-not (Test-Path -LiteralPath $Vtp -PathType Leaf)){
 }
 
 function Run-Vtp {
-  param([string[]]$Args)
+  param([string[]]$ChildArgs)
 
   $ps = Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\powershell.exe"
-  $out = & $ps -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Vtp @Args 2>&1
+  $out = & $ps -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Vtp @ChildArgs 2>&1
   $code = $LASTEXITCODE
   $text = ($out | Out-String)
 
   Write-Host $text.Trim()
 
   if($code -ne 0){
-    throw ("VTP_FULL_GREEN_FAIL:CHILD_EXIT:" + $code + ":" + ($Args -join " "))
+    throw ("VTP_FULL_GREEN_FAIL:CHILD_EXIT:" + $code + ":" + ($ChildArgs -join " "))
   }
 
   return $text
