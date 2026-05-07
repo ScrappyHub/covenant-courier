@@ -168,3 +168,12 @@ Run:
 Expected:
 
     COVENANT_COURIER_RECEIPTS_OK
+## Product verification
+
+Run:
+
+    .\courier.ps1 verify
+
+Expected:
+
+    COVENANT_COURIER_VERIFY_OK

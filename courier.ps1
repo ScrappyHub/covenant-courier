@@ -39,6 +39,7 @@ if($Command -eq "help"){
   Write-Host "  .\courier.ps1 prepare"
   Write-Host "  .\courier.ps1 send"
   Write-Host "  .\courier.ps1 receipts"
+  Write-Host "  .\courier.ps1 verify"
   Write-Host ""
   Write-Host "Protocol substrate:"
   Write-Host "  .\vtp.ps1 verify"
@@ -63,6 +64,11 @@ if($Command -eq "send"){
 
 if($Command -eq "receipts"){
   Run-PS (Join-Path $Scripts "courier_receipts_latest_v1.ps1") @("-RepoRoot",$RepoRoot)
+  exit 0
+}
+
+if($Command -eq "verify"){
+  Run-PS (Join-Path $Scripts "courier_verify_all_v1.ps1") @("-RepoRoot",$RepoRoot)
   exit 0
 }
 throw ("UNKNOWN_COURIER_COMMAND:" + $Command)
