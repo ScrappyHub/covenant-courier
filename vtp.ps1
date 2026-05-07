@@ -234,4 +234,9 @@ if($Command -eq "receipts"){
   Run-PS (Join-Path $Scripts "vtp_receipts_latest_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId)
   exit 0
 }
+
+if($Command -eq "verify"){
+  Run-PS (Join-Path $RepoRoot "vtp_verify_all.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$NodeId,"-To",$To)
+  exit 0
+}
 throw "UNKNOWN_VTP_COMMAND:$Command"
