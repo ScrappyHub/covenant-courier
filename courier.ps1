@@ -41,6 +41,7 @@ if($Command -eq "help"){
   Write-Host "  .\courier.ps1 receive"
   Write-Host "  .\courier.ps1 receive-negative"
   Write-Host "  .\courier.ps1 receipts"
+  Write-Host "  .\courier.ps1 receipt-chain"
   Write-Host "  .\courier.ps1 verify"
   Write-Host ""
   Write-Host "Protocol substrate:"
@@ -81,6 +82,11 @@ if($Command -eq "receive"){
 
 if($Command -eq "receive-negative"){
   Run-PS (Join-Path $Scripts "courier_receive_negative_v1.ps1") @("-RepoRoot",$RepoRoot,"-NodeId",$RecipientNodeId)
+  exit 0
+}
+
+if($Command -eq "receipt-chain"){
+  Run-PS (Join-Path $Scripts "courier_receipt_chain_v1.ps1") @("-RepoRoot",$RepoRoot)
   exit 0
 }
 throw ("UNKNOWN_COURIER_COMMAND:" + $Command)

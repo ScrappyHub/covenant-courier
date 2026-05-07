@@ -195,3 +195,12 @@ Run:
 Expected:
 
     COVENANT_COURIER_RECEIVE_NEGATIVE_OK
+## Product receipt chain
+
+Run:
+
+    .\courier.ps1 receipt-chain
+
+Expected:
+
+    COVENANT_COURIER_RECEIPT_CHAIN_OK

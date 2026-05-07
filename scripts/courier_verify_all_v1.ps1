@@ -51,6 +51,7 @@ Run-Step -Name "send" -Script $Courier -ChildArgs @("send","-RepoRoot",$RepoRoot
 Run-Step -Name "receive-negative" -Script $Courier -ChildArgs @("receive-negative","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_RECEIVE_NEGATIVE_OK"
 Run-Step -Name "receive" -Script $Courier -ChildArgs @("receive","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_RECEIVE_OK"
 Run-Step -Name "receipts" -Script $Courier -ChildArgs @("receipts","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_RECEIPTS_OK"
+Run-Step -Name "receipt-chain" -Script $Courier -ChildArgs @("receipt-chain","-RepoRoot",$RepoRoot) -ExpectedToken "COVENANT_COURIER_RECEIPT_CHAIN_OK"
 Run-Step -Name "vtp-verify" -Script $Vtp -ChildArgs @("verify","-RepoRoot",$RepoRoot) -ExpectedToken "VTP_VERIFY_ALL_OK"
 
 Write-Host "COVENANT_COURIER_VERIFY_OK"
