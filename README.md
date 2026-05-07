@@ -117,3 +117,13 @@ Covenant Courier product definition:
     docs\COVENANT_COURIER_PRODUCT_SPEC_V1.md
 
 VTP remains the proven protocol substrate. Covenant Courier is the product layer on top.
+
+## Product safety docs
+
+Product threat model:
+
+    docs\COVENANT_COURIER_THREAT_MODEL_V1.md
+
+Release checklist:
+
+    docs\COVENANT_COURIER_RELEASE_CHECKLIST_V1.md
