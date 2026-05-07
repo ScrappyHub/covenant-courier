@@ -12,16 +12,16 @@ $ReceiptRoot = Join-Path $RepoRoot "proofs\receipts"
 $TransportReceipt = Join-Path $ReceiptRoot "courier_transport.ndjson"
 $WireIngestReceipt = Join-Path $ReceiptRoot "vtp_udp_wire_ingest.ndjson"
 
-function Get-PropValue {
+function Get-ValueByName {
   param(
     [AllowNull()]$Obj,
-    [Parameter(Mandatory=$true)][string]$Name
+    [string]$Name
   )
   if($null -eq $Obj){ return "" }
-  foreach($p in @($Obj.PSObject.Properties)){
-    if($p.Name -eq $Name){
-      if($null -eq $p.Value){ return "" }
-      return [string]$p.Value
+  foreach($prop in @($Obj.PSObject.Properties)){
+    if($prop.Name -eq $Name){
+      if($null -eq $prop.Value){ return "" }
+      return [string]$prop.Value
     }
   }
   return ""
@@ -30,47 +30,34 @@ function Get-PropValue {
 function Get-FirstValue {
   param(
     [AllowNull()]$Obj,
-    [Parameter(Mandatory=$true)][string[]]$Names
+    [string[]]$Names
   )
-  foreach($name in $Names){
-    $v = Get-PropValue -Obj $Obj -Name $name
-    if(-not [string]::IsNullOrWhiteSpace($v)){ return $v }
+  foreach($name in @($Names)){
+    $value = Get-ValueByName -Obj $Obj -Name $name
+    if(-not [string]::IsNullOrWhiteSpace($value)){ return $value }
   }
   return ""
 }
 
-function Get-Details {
+function Get-DetailsObject {
   param([AllowNull()]$Obj)
   if($null -eq $Obj){ return $null }
-  foreach($p in @($Obj.PSObject.Properties)){
-    if($p.Name -eq "details"){ return $p.Value }
+  foreach($prop in @($Obj.PSObject.Properties)){
+    if($prop.Name -eq "details"){ return $prop.Value }
   }
   return $null
 }
 
-function Add-Part {
-  param(
-    [Parameter(Mandatory=$true)][System.Collections.Generic.List[string]]$Parts,
-    [Parameter(Mandatory=$true)][string]$Name,
-    [AllowNull()][string]$Value
-  )
-  if(-not [string]::IsNullOrWhiteSpace($Value)){
-    [void]$Parts.Add($Name + "=" + $Value)
-  }
-}
-
 function Format-ReceiptLine {
-  param([Parameter(Mandatory=$true)][string]$Line)
+  param([string]$Line)
 
   $obj = $Line | ConvertFrom-Json
-  $details = Get-Details -Obj $obj
+  $details = Get-DetailsObject -Obj $obj
 
   $schema = Get-FirstValue -Obj $obj -Names @("schema","receipt_schema","type")
   $time = Get-FirstValue -Obj $obj -Names @("time_utc","created_utc","timestamp_utc","utc","time")
-  $eventType = Get-FirstValue -Obj $obj -Names @("event_type","eventType","event","kind","action","decision","status","result")
-
+  $decision = Get-FirstValue -Obj $obj -Names @("event_type","eventType","decision","action","status","result","event","kind")
   $frame = Get-FirstValue -Obj $obj -Names @("frame_id","frameId","frame","packet_id","packetId","id")
-  $decision = Get-FirstValue -Obj $obj -Names @("decision","action","status","result","event","kind")
   $reason = Get-FirstValue -Obj $obj -Names @("reason","reason_code","message","detail","error","error_code")
   $hashValue = Get-FirstValue -Obj $obj -Names @("payload_sha256","sha256","hash","packet_sha256","frame_sha256")
   $pathValue = Get-FirstValue -Obj $obj -Names @("path","frame_path","dest","destination","output_path")
@@ -78,9 +65,6 @@ function Format-ReceiptLine {
   if($null -ne $details){
     if([string]::IsNullOrWhiteSpace($frame)){
       $frame = Get-FirstValue -Obj $details -Names @("frame_id","frameId","frame","packet_id","packetId","id")
-    }
-    if([string]::IsNullOrWhiteSpace($decision)){
-      $decision = Get-FirstValue -Obj $details -Names @("decision","action","status","result","event","kind")
     }
     if([string]::IsNullOrWhiteSpace($reason)){
       $reason = Get-FirstValue -Obj $details -Names @("reason","reason_code","message","detail","error","error_code")
@@ -93,30 +77,23 @@ function Format-ReceiptLine {
     }
   }
 
-  if(-not [string]::IsNullOrWhiteSpace($eventType)){
-    $decision = $eventType
-  }
-
   $parts = New-Object System.Collections.Generic.List[string]
-  Add-Part -Parts $parts -Name "schema" -Value $schema
-  Add-Part -Parts $parts -Name "time" -Value $time
-  Add-Part -Parts $parts -Name "frame" -Value $frame
-  Add-Part -Parts $parts -Name "decision" -Value $decision
-  Add-Part -Parts $parts -Name "reason" -Value $reason
-  Add-Part -Parts $parts -Name "hash" -Value $hashValue
-  Add-Part -Parts $parts -Name "path" -Value $pathValue
+  if(-not [string]::IsNullOrWhiteSpace($schema)){ [void]$parts.Add("schema=" + $schema) }
+  if(-not [string]::IsNullOrWhiteSpace($time)){ [void]$parts.Add("time=" + $time) }
+  if(-not [string]::IsNullOrWhiteSpace($frame)){ [void]$parts.Add("frame=" + $frame) }
+  if(-not [string]::IsNullOrWhiteSpace($decision)){ [void]$parts.Add("decision=" + $decision) }
+  if(-not [string]::IsNullOrWhiteSpace($reason)){ [void]$parts.Add("reason=" + $reason) }
+  if(-not [string]::IsNullOrWhiteSpace($hashValue)){ [void]$parts.Add("hash=" + $hashValue) }
+  if(-not [string]::IsNullOrWhiteSpace($pathValue)){ [void]$parts.Add("path=" + $pathValue) }
 
-  if($parts.Count -gt 0){
-    return (($parts.ToArray()) -join " ")
-  }
-
+  if($parts.Count -gt 0){ return (($parts.ToArray()) -join " ") }
   return ("json=" + ($obj | ConvertTo-Json -Depth 20 -Compress))
 }
 
 function Show-LatestReceiptLines {
   param(
-    [Parameter(Mandatory=$true)][string]$Label,
-    [Parameter(Mandatory=$true)][string]$Path,
+    [string]$Label,
+    [string]$Path,
     [int]$Tail = 5
   )
 
