@@ -263,3 +263,22 @@ Current distributable release:
     covenant-courier-v0.1.5-product-core
 
 Earlier v0.1.0 through v0.1.4 release assets are superseded.
+## Public preview docs
+
+Current public preview:
+
+    covenant-courier-v0.1.5-product-core
+
+Start here:
+
+    docs\QUICKSTART.md
+    docs\PUBLIC_RELEASE.md
+    docs\VERIFY_RELEASE.md
+    docs\DISTRIBUTION.md
+    docs\FAQ.md
+    SECURITY.md
+    CHANGELOG.md
+
+Download:
+
+    https://github.com/ScrappyHub/covenant-courier/releases/tag/covenant-courier-v0.1.5-product-core
