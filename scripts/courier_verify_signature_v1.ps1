@@ -12,7 +12,10 @@ function Fail([string]$Code){
   throw $Code
 }
 
-$Allowed = Join-Path $RepoRoot "proofs\trust\allowed_signers"
+$Allowed = Join-Path $RepoRoot "trust\allowed_signers"
+if(-not (Test-Path -LiteralPath $Allowed -PathType Leaf)){
+  $Allowed = Join-Path $RepoRoot "proofs\trust\allowed_signers"
+}
 $SigPath = $MessagePath + ".sig"
 $SSHKeygen = Join-Path $env:WINDIR "System32\OpenSSH\ssh-keygen.exe"
 
