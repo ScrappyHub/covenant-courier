@@ -252,3 +252,14 @@ Tag guidance:
 Authoritative final product-core tag:
 
     covenant-courier-product-core-v1-finalized-green-fixed
+## Distribution
+
+Distribution instructions:
+
+    docs\DISTRIBUTION.md
+
+Current distributable release:
+
+    covenant-courier-v0.1.5-product-core
+
+Earlier v0.1.0 through v0.1.4 release assets are superseded.
