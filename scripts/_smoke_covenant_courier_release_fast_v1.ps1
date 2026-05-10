@@ -49,12 +49,19 @@ function Require-Dir([string]$Rel){
 function Run-Courier([string]$Command){
   Write-Host ("FAST_SMOKE_STEP_START: " + $Command)
 
-  $out = & $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Courier $Command 2>&1
+  Push-Location $RepoRoot
+  try {
+    $out = & $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Courier $Command 2>&1
+    $exitCode = $LASTEXITCODE
+  } finally {
+    Pop-Location
+  }
+
   $text = ($out | Out-String).Trim()
 
-  if($LASTEXITCODE -ne 0){
+  if($exitCode -ne 0){
     Write-Host $text
-    Fail ("FAST_SMOKE_FAIL:COMMAND_EXIT:" + $Command + ":" + $LASTEXITCODE)
+    Fail ("FAST_SMOKE_FAIL:COMMAND_EXIT:" + $Command + ":" + $exitCode)
   }
 
   if(-not [string]::IsNullOrWhiteSpace($text)){
